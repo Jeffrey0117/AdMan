@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdPreview } from './ad-preview'
+import { useLang } from '@/components/layout/lang-provider'
+import type { TranslationKey } from '@/lib/i18n'
 import {
   AD_TYPES,
-  AD_TYPE_LABELS,
   AD_STATUSES,
-  AD_STATUS_LABELS,
   AD_POSITIONS,
-  AD_POSITION_LABELS,
 } from '@/lib/constants'
 import type { AdType, AdStatus, AdPosition } from '@/lib/constants'
 
@@ -58,6 +57,7 @@ const defaultStyle = {
 
 export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
   const router = useRouter()
+  const { t } = useLang()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -89,7 +89,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
       if (mode === 'edit' && adId) {
         const adRes = await fetch(`/api/ads/${adId}`)
         if (!adRes.ok) {
-          setError('Ad not found')
+          setError(t('common.notFound'))
           setLoading(false)
           return
         }
@@ -186,7 +186,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
   }
 
   if (loading) {
-    return <div className="p-8 text-zinc-500">Loading...</div>
+    return <div className="p-8 text-zinc-500">{t('common.loading')}</div>
   }
 
   if (error && mode === 'edit' && !form.name) {
@@ -201,7 +201,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold text-zinc-900">
-        {mode === 'create' ? 'Create Ad' : `Edit: ${form.name}`}
+        {mode === 'create' ? t('adForm.create') : `${t('adForm.editPrefix')} ${form.name}`}
       </h1>
 
       {error && (
@@ -213,14 +213,14 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
       <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-2">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className={labelClass}>Project</label>
+            <label className={labelClass}>{t('adForm.project')}</label>
             <select
               className={selectClass}
               value={form.projectId}
               onChange={(e) => updateForm({ projectId: e.target.value })}
               required
             >
-              <option value="">Select project...</option>
+              <option value="">{t('adForm.selectProject')}</option>
               {projects.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.name}
@@ -230,47 +230,47 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
           </div>
 
           <div>
-            <label className={labelClass}>Name</label>
+            <label className={labelClass}>{t('adForm.name')}</label>
             <input
               className={inputClass}
               value={form.name}
               onChange={(e) => updateForm({ name: e.target.value })}
-              placeholder="Ad name"
+              placeholder={t('adForm.namePlaceholder')}
               required
             />
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className={labelClass}>Type</label>
+              <label className={labelClass}>{t('adForm.type')}</label>
               <select
                 className={selectClass}
                 value={form.type}
                 onChange={(e) => updateForm({ type: e.target.value as AdType })}
               >
-                {AD_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {AD_TYPE_LABELS[t]}
+                {AD_TYPES.map((typ) => (
+                  <option key={typ} value={typ}>
+                    {t(`type.${typ}` as TranslationKey)}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className={labelClass}>Position</label>
+              <label className={labelClass}>{t('adForm.position')}</label>
               <select
                 className={selectClass}
                 value={form.position}
                 onChange={(e) => updateForm({ position: e.target.value as AdPosition })}
               >
-                {AD_POSITIONS.map((p) => (
-                  <option key={p} value={p}>
-                    {AD_POSITION_LABELS[p]}
+                {AD_POSITIONS.map((pos) => (
+                  <option key={pos} value={pos}>
+                    {t(`position.${pos}` as TranslationKey)}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className={labelClass}>Status</label>
+              <label className={labelClass}>{t('adForm.status')}</label>
               <select
                 className={selectClass}
                 value={form.status}
@@ -278,7 +278,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
               >
                 {AD_STATUSES.map((s) => (
                   <option key={s} value={s}>
-                    {AD_STATUS_LABELS[s]}
+                    {t(`status.${s}` as TranslationKey)}
                   </option>
                 ))}
               </select>
@@ -286,30 +286,30 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
           </div>
 
           <div>
-            <label className={labelClass}>Headline</label>
+            <label className={labelClass}>{t('adForm.headline')}</label>
             <input
               className={inputClass}
               value={form.headline}
               onChange={(e) => updateForm({ headline: e.target.value })}
-              placeholder="Ad headline"
+              placeholder={t('adForm.headlinePlaceholder')}
               required
             />
           </div>
 
           <div>
-            <label className={labelClass}>Body Text</label>
+            <label className={labelClass}>{t('adForm.bodyText')}</label>
             <textarea
               className={inputClass}
               rows={3}
               value={form.bodyText}
               onChange={(e) => updateForm({ bodyText: e.target.value })}
-              placeholder="Ad body text"
+              placeholder={t('adForm.bodyTextPlaceholder')}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelClass}>CTA Text</label>
+              <label className={labelClass}>{t('adForm.ctaText')}</label>
               <input
                 className={inputClass}
                 value={form.ctaText}
@@ -319,7 +319,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
               />
             </div>
             <div>
-              <label className={labelClass}>CTA URL</label>
+              <label className={labelClass}>{t('adForm.ctaUrl')}</label>
               <input
                 className={inputClass}
                 type="url"
@@ -332,7 +332,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
           </div>
 
           <div>
-            <label className={labelClass}>Image</label>
+            <label className={labelClass}>{t('adForm.image')}</label>
             <input
               type="file"
               accept="image/*"
@@ -347,17 +347,19 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
                   onClick={() => updateForm({ imageUrl: '' })}
                   className="text-xs text-red-600 hover:underline"
                 >
-                  Remove
+                  {t('adForm.removeImage')}
                 </button>
               </div>
             )}
           </div>
 
           <div className="border-t border-zinc-200 pt-4">
-            <h3 className="text-sm font-semibold text-zinc-700 mb-3">Style</h3>
+            <h3 className="text-sm font-semibold text-zinc-700 mb-3">
+              {t('adForm.style')}
+            </h3>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>Background</label>
+                <label className={labelClass}>{t('adForm.bgColor')}</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -373,7 +375,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
                 </div>
               </div>
               <div>
-                <label className={labelClass}>Text Color</label>
+                <label className={labelClass}>{t('adForm.textColor')}</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -389,7 +391,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
                 </div>
               </div>
               <div>
-                <label className={labelClass}>CTA Background</label>
+                <label className={labelClass}>{t('adForm.ctaBgColor')}</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -405,7 +407,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
                 </div>
               </div>
               <div>
-                <label className={labelClass}>CTA Text</label>
+                <label className={labelClass}>{t('adForm.ctaTextColor')}</label>
                 <div className="flex gap-2">
                   <input
                     type="color"
@@ -423,7 +425,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
             </div>
             <div className="mt-3 grid grid-cols-3 gap-3">
               <div>
-                <label className={labelClass}>Border Radius</label>
+                <label className={labelClass}>{t('adForm.borderRadius')}</label>
                 <input
                   className={inputClass}
                   value={form.style.borderRadius}
@@ -432,7 +434,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
                 />
               </div>
               <div>
-                <label className={labelClass}>Padding</label>
+                <label className={labelClass}>{t('adForm.padding')}</label>
                 <input
                   className={inputClass}
                   value={form.style.padding}
@@ -441,7 +443,7 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
                 />
               </div>
               <div>
-                <label className={labelClass}>Max Width</label>
+                <label className={labelClass}>{t('adForm.maxWidth')}</label>
                 <input
                   className={inputClass}
                   value={form.style.maxWidth}
@@ -458,20 +460,26 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
               disabled={submitting}
               className="rounded-md bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
             >
-              {submitting ? 'Saving...' : mode === 'create' ? 'Create Ad' : 'Save Changes'}
+              {submitting
+                ? t('adForm.saving')
+                : mode === 'create'
+                  ? t('adForm.createBtn')
+                  : t('adForm.saveBtn')}
             </button>
             <button
               type="button"
               onClick={() => router.back()}
               className="rounded-md border border-zinc-300 px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
             >
-              Cancel
+              {t('adForm.cancel')}
             </button>
           </div>
         </form>
 
         <div>
-          <h2 className="text-sm font-semibold text-zinc-700 mb-3">Live Preview</h2>
+          <h2 className="text-sm font-semibold text-zinc-700 mb-3">
+            {t('adForm.livePreview')}
+          </h2>
           <div className="rounded-lg border border-zinc-200 bg-white p-6">
             <AdPreview
               ad={{
@@ -488,7 +496,9 @@ export function AdForm({ mode, adId, defaultProjectId }: AdFormProps) {
 
           {mode === 'edit' && adId && (
             <div className="mt-6 rounded-lg border border-zinc-200 bg-white p-4">
-              <h3 className="text-sm font-semibold text-zinc-700 mb-2">Embed Code</h3>
+              <h3 className="text-sm font-semibold text-zinc-700 mb-2">
+                {t('adForm.embedCode')}
+              </h3>
               <pre className="rounded bg-zinc-100 p-3 text-xs text-zinc-700 overflow-x-auto">
 {`<div data-adman-id="${adId}"></div>
 <script src="${typeof window !== 'undefined' ? window.location.origin : ''}/embed/adman.js" data-base-url="${typeof window !== 'undefined' ? window.location.origin : ''}"></script>`}

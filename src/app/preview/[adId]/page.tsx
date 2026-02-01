@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { AdPreview } from '@/components/ads/ad-preview'
+import { useLang } from '@/components/layout/lang-provider'
 
 interface AdData {
   id: string
@@ -29,6 +30,7 @@ interface AdData {
 
 export default function PreviewPage() {
   const params = useParams<{ adId: string }>()
+  const { t } = useLang()
   const [ad, setAd] = useState<AdData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -45,11 +47,11 @@ export default function PreviewPage() {
   }, [fetchAd])
 
   if (loading) {
-    return <div className="p-8 text-zinc-500">Loading...</div>
+    return <div className="p-8 text-zinc-500">{t('common.loading')}</div>
   }
 
   if (!ad) {
-    return <div className="p-8 text-red-600">Ad not found</div>
+    return <div className="p-8 text-red-600">{t('common.notFound')}</div>
   }
 
   return (
@@ -60,17 +62,17 @@ export default function PreviewPage() {
             href={`/ads/${ad.id}/edit`}
             className="text-sm text-zinc-500 hover:text-zinc-700"
           >
-            &larr; Back to Edit
+            &larr; {t('preview.back')}
           </Link>
           <h1 className="mt-2 text-2xl font-bold text-zinc-900">
-            Preview: {ad.name}
+            {t('preview.title')} {ad.name}
           </h1>
         </div>
       </div>
 
       <div className="mt-6">
         <h2 className="text-sm font-semibold text-zinc-500 mb-3 uppercase tracking-wider">
-          Ad Preview
+          {t('preview.adPreview')}
         </h2>
         <div className="rounded-lg border border-zinc-200 bg-white p-8">
           <div className="mx-auto" style={{ maxWidth: ad.style.maxWidth }}>
@@ -81,7 +83,7 @@ export default function PreviewPage() {
 
       <div className="mt-6 rounded-lg border border-zinc-200 bg-white p-5">
         <h2 className="text-sm font-semibold text-zinc-500 mb-3 uppercase tracking-wider">
-          Embed Code
+          {t('preview.embedCode')}
         </h2>
         <pre className="rounded-md bg-zinc-100 p-4 text-sm text-zinc-700 overflow-x-auto">
 {`<!-- Place this where you want the ad to appear -->

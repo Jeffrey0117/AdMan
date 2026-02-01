@@ -2,15 +2,18 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useLang } from './lang-provider'
+import type { TranslationKey } from '@/lib/i18n'
 
-const navItems = [
-  { href: '/', label: 'Dashboard' },
-  { href: '/projects', label: 'Projects' },
-  { href: '/ads', label: 'Ads' },
+const navItems: { href: string; labelKey: TranslationKey }[] = [
+  { href: '/', labelKey: 'nav.dashboard' },
+  { href: '/projects', labelKey: 'nav.projects' },
+  { href: '/ads', labelKey: 'nav.ads' },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
+  const { locale, setLocale, t } = useLang()
 
   function isActive(href: string) {
     if (href === '/') return pathname === '/'
@@ -35,10 +38,18 @@ export function Sidebar() {
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
             }`}
           >
-            {item.label}
+            {t(item.labelKey)}
           </Link>
         ))}
       </nav>
+      <div className="p-3 border-t border-zinc-800">
+        <button
+          onClick={() => setLocale(locale === 'en' ? 'zh' : 'en')}
+          className="w-full rounded-md px-3 py-2 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors text-left"
+        >
+          {locale === 'en' ? '中文' : 'English'}
+        </button>
+      </div>
     </aside>
   )
 }

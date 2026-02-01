@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { AD_TYPE_LABELS, AD_STATUS_LABELS } from '@/lib/constants'
+import { useLang } from '@/components/layout/lang-provider'
+import type { TranslationKey } from '@/lib/i18n'
 import type { AdType, AdStatus } from '@/lib/constants'
 
 interface Project {
@@ -27,7 +28,7 @@ interface Ad {
 
 export default function ProjectDetailPage() {
   const params = useParams<{ projectId: string }>()
-  const router = useRouter()
+  const { t } = useLang()
   const [project, setProject] = useState<Project | null>(null)
   const [ads, setAds] = useState<Ad[]>([])
   const [loading, setLoading] = useState(true)
@@ -70,17 +71,17 @@ export default function ProjectDetailPage() {
   }
 
   async function handleDeleteAd(adId: string) {
-    if (!confirm('Delete this ad?')) return
+    if (!confirm(t('ads.confirmDelete'))) return
     await fetch(`/api/ads/${adId}`, { method: 'DELETE' })
     fetchData()
   }
 
   if (loading) {
-    return <div className="p-8 text-zinc-500">Loading...</div>
+    return <div className="p-8 text-zinc-500">{t('common.loading')}</div>
   }
 
   if (!project) {
-    return <div className="p-8 text-red-600">Project not found</div>
+    return <div className="p-8 text-red-600">{t('common.notFound')}</div>
   }
 
   const statusColors: Record<string, string> = {
@@ -99,14 +100,14 @@ export default function ProjectDetailPage() {
         href="/projects"
         className="text-sm text-zinc-500 hover:text-zinc-700"
       >
-        &larr; Back to Projects
+        &larr; {t('projects.back')}
       </Link>
 
       <div className="mt-4 rounded-lg border border-zinc-200 bg-white p-6">
         {editing ? (
           <form onSubmit={handleUpdate} className="space-y-3">
             <div>
-              <label className={labelClass}>Name</label>
+              <label className={labelClass}>{t('projects.name')}</label>
               <input
                 className={inputClass}
                 value={name}
@@ -115,7 +116,7 @@ export default function ProjectDetailPage() {
               />
             </div>
             <div>
-              <label className={labelClass}>Description</label>
+              <label className={labelClass}>{t('projects.description')}</label>
               <input
                 className={inputClass}
                 value={description}
@@ -123,7 +124,7 @@ export default function ProjectDetailPage() {
               />
             </div>
             <div>
-              <label className={labelClass}>Domain</label>
+              <label className={labelClass}>{t('projects.domain')}</label>
               <input
                 className={inputClass}
                 value={domain}
@@ -135,14 +136,14 @@ export default function ProjectDetailPage() {
                 type="submit"
                 className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
               >
-                Save
+                {t('projects.save')}
               </button>
               <button
                 type="button"
                 onClick={() => setEditing(false)}
                 className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100"
               >
-                Cancel
+                {t('projects.cancel')}
               </button>
             </div>
           </form>
@@ -168,7 +169,7 @@ export default function ProjectDetailPage() {
                 onClick={() => setEditing(true)}
                 className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm text-zinc-600 hover:bg-zinc-100"
               >
-                Edit
+                {t('projects.edit')}
               </button>
             </div>
           </div>
@@ -177,13 +178,13 @@ export default function ProjectDetailPage() {
 
       <div className="mt-6 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-zinc-900">
-          Ads ({ads.length})
+          {t('nav.ads')} ({ads.length})
         </h2>
         <Link
           href={`/ads/new?projectId=${params.projectId}`}
           className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
         >
-          + New Ad
+          {t('ads.new')}
         </Link>
       </div>
 
@@ -197,7 +198,7 @@ export default function ProjectDetailPage() {
               <span
                 className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColors[ad.status] ?? 'bg-zinc-100 text-zinc-600'}`}
               >
-                {AD_STATUS_LABELS[ad.status]}
+                {t(`status.${ad.status}` as TranslationKey)}
               </span>
               <div>
                 <Link
@@ -207,7 +208,7 @@ export default function ProjectDetailPage() {
                   {ad.name}
                 </Link>
                 <p className="text-xs text-zinc-400">
-                  {AD_TYPE_LABELS[ad.type]}
+                  {t(`type.${ad.type}` as TranslationKey)}
                 </p>
               </div>
             </div>
@@ -216,19 +217,19 @@ export default function ProjectDetailPage() {
                 href={`/preview/${ad.id}`}
                 className="text-xs text-zinc-500 hover:underline"
               >
-                Preview
+                {t('ads.preview')}
               </Link>
               <Link
                 href={`/ads/${ad.id}/edit`}
                 className="text-xs text-zinc-600 hover:underline"
               >
-                Edit
+                {t('ads.edit')}
               </Link>
               <button
                 onClick={() => handleDeleteAd(ad.id)}
                 className="text-xs text-red-500 hover:underline"
               >
-                Delete
+                {t('ads.delete')}
               </button>
             </div>
           </div>
@@ -236,7 +237,7 @@ export default function ProjectDetailPage() {
 
         {ads.length === 0 && (
           <div className="text-center py-8 text-zinc-400 text-sm">
-            No ads yet for this project.
+            {t('projects.noAds')}
           </div>
         )}
       </div>
