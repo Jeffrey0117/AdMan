@@ -60,6 +60,7 @@ export const AdSchema = z.object({
   ctaText: z.string().min(1, 'CTA text is required'),
   ctaUrl: z.string().url('Must be a valid URL'),
   imageUrl: z.string().optional(),
+  backgroundImageUrl: z.string().optional(),
   style: AdStyleSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -78,6 +79,7 @@ export const CreateAdSchema = z.object({
   ctaText: z.string().min(1, 'CTA text is required'),
   ctaUrl: z.string().url('Must be a valid URL'),
   imageUrl: z.string().optional(),
+  backgroundImageUrl: z.string().optional(),
   style: AdStyleSchema.optional(),
 })
 
@@ -93,6 +95,7 @@ export const UpdateAdSchema = z.object({
   ctaText: z.string().min(1).optional(),
   ctaUrl: z.string().url().optional(),
   imageUrl: z.string().optional(),
+  backgroundImageUrl: z.string().optional(),
   style: AdStyleSchema.partial().optional(),
 })
 

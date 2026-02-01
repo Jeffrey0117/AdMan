@@ -30,6 +30,7 @@ interface AdFormData {
   ctaText: string
   ctaUrl: string
   imageUrl: string
+  backgroundImageUrl: string
   style: {
     backgroundColor: string
     textColor: string
@@ -78,6 +79,7 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
       ctaText: '',
       ctaUrl: '',
       imageUrl: '',
+      backgroundImageUrl: '',
       style: { ...defaultStyle },
     }
 
@@ -140,6 +142,7 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
           ctaText: adData.ctaText,
           ctaUrl: adData.ctaUrl,
           imageUrl: adData.imageUrl ?? '',
+          backgroundImageUrl: adData.backgroundImageUrl ?? '',
           style: {
             backgroundColor: adData.style.backgroundColor,
             textColor: adData.style.textColor,
@@ -195,6 +198,7 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
     const body = {
       ...form,
       imageUrl: form.imageUrl || undefined,
+      backgroundImageUrl: form.backgroundImageUrl || undefined,
     }
 
     try {
@@ -395,6 +399,45 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
             )}
           </div>
 
+          <div>
+            <label className={labelClass}>{t('adForm.backgroundImage')}</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                const formData = new FormData()
+                formData.append('file', file)
+                try {
+                  const res = await fetch('/api/upload', { method: 'POST', body: formData })
+                  if (!res.ok) {
+                    const data = await res.json()
+                    setError(data.error)
+                    return
+                  }
+                  const data = await res.json()
+                  updateForm({ backgroundImageUrl: data.url })
+                } catch {
+                  setError('Upload failed')
+                }
+              }}
+              className="text-sm text-zinc-600"
+            />
+            {form.backgroundImageUrl && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-xs text-zinc-500">{form.backgroundImageUrl}</span>
+                <button
+                  type="button"
+                  onClick={() => updateForm({ backgroundImageUrl: '' })}
+                  className="text-xs text-red-600 hover:underline"
+                >
+                  {t('adForm.removeBackgroundImage')}
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="border-t border-zinc-200 pt-4">
             <h3 className="text-sm font-semibold text-zinc-700 mb-3">
               {t('adForm.style')}
@@ -530,6 +573,7 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
                 ctaText: form.ctaText,
                 ctaUrl: form.ctaUrl,
                 imageUrl: form.imageUrl || undefined,
+                backgroundImageUrl: form.backgroundImageUrl || undefined,
                 type: form.type,
                 style: form.style,
               }}

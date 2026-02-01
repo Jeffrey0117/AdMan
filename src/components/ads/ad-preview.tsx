@@ -4,6 +4,7 @@ interface AdPreviewData {
   ctaText: string
   ctaUrl: string
   imageUrl?: string
+  backgroundImageUrl?: string
   type: string
   style: {
     backgroundColor: string
@@ -13,6 +14,16 @@ interface AdPreviewData {
     borderRadius: string
     padding: string
     maxWidth: string
+  }
+}
+
+function bgImageStyle(url?: string): React.CSSProperties {
+  if (!url) return {}
+  return {
+    backgroundImage: `url(${url})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
   }
 }
 
@@ -78,6 +89,7 @@ function BottomBannerPreview({ ad }: { ad: AdPreviewData }) {
         display: 'flex',
         alignItems: 'center',
         gap: '16px',
+        ...bgImageStyle(ad.backgroundImageUrl),
       }}
     >
       {ad.imageUrl && (
@@ -120,6 +132,7 @@ function TopNotificationPreview({ ad }: { ad: AdPreviewData }) {
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
+        ...bgImageStyle(ad.backgroundImageUrl),
       }}
     >
       <span style={{ flex: 1, fontSize: '14px', fontWeight: 500 }}>
@@ -142,6 +155,7 @@ function InArticleBannerPreview({ ad }: { ad: AdPreviewData }) {
         maxWidth: ad.style.maxWidth,
         fontFamily,
         boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+        ...bgImageStyle(ad.backgroundImageUrl),
       }}
     >
       {ad.imageUrl && (
@@ -194,6 +208,7 @@ function ModalPopupPreview({ ad }: { ad: AdPreviewData }) {
           width: '100%',
           position: 'relative',
           boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          ...bgImageStyle(ad.backgroundImageUrl),
         }}
       >
         <div style={{ position: 'absolute', top: '8px', right: '8px' }}>
@@ -237,6 +252,7 @@ function SidebarCardPreview({ ad }: { ad: AdPreviewData }) {
         maxWidth: '280px',
         fontFamily,
         boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
+        ...bgImageStyle(ad.backgroundImageUrl),
       }}
     >
       {ad.imageUrl && (

@@ -67,6 +67,8 @@ const translations = {
   'adForm.ctaUrl': { en: 'CTA URL', zh: 'CTA 連結' },
   'adForm.image': { en: 'Image', zh: '圖片' },
   'adForm.removeImage': { en: 'Remove', zh: '移除' },
+  'adForm.backgroundImage': { en: 'Background Image', zh: '背景圖片' },
+  'adForm.removeBackgroundImage': { en: 'Remove', zh: '移除' },
   'adForm.style': { en: 'Style', zh: '樣式' },
   'adForm.bgColor': { en: 'Background', zh: '背景色' },
   'adForm.textColor': { en: 'Text Color', zh: '文字色' },

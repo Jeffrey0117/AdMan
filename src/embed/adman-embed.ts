@@ -28,7 +28,18 @@
     return url.startsWith('http') ? url : `${BASE_URL}${url}`
   }
 
-  function baseStyles(style: Record<string, string | number>): Record<string, string> {
+  function bgImageStyles(url?: string): Record<string, string> {
+    if (!url) return {}
+    const src = url.startsWith('http') ? url : `${BASE_URL}${url}`
+    return {
+      backgroundImage: `url(${src})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }
+  }
+
+  function baseStyles(style: Record<string, string | number>, backgroundImageUrl?: string): Record<string, string> {
     return {
       backgroundColor: String(style.backgroundColor),
       color: String(style.textColor),
@@ -37,6 +48,7 @@
       maxWidth: String(style.maxWidth),
       fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
       boxSizing: 'border-box',
+      ...bgImageStyles(backgroundImageUrl),
     }
   }
 
@@ -79,7 +91,7 @@
     wrapper.setAttribute('data-adman-wrapper', '')
 
     Object.assign(wrapper.style, {
-      ...baseStyles(style),
+      ...baseStyles(style, ad.backgroundImageUrl as string | undefined),
       position: 'fixed',
       bottom: '0',
       left: '0',
@@ -115,7 +127,7 @@
     wrapper.setAttribute('data-adman-wrapper', '')
 
     Object.assign(wrapper.style, {
-      ...baseStyles(style),
+      ...baseStyles(style, ad.backgroundImageUrl as string | undefined),
       position: 'fixed',
       top: '0',
       left: '0',
@@ -142,7 +154,7 @@
     wrapper.setAttribute('data-adman-wrapper', '')
 
     Object.assign(wrapper.style, {
-      ...baseStyles(style),
+      ...baseStyles(style, ad.backgroundImageUrl as string | undefined),
       boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
     })
 
@@ -178,7 +190,7 @@
 
     const card = document.createElement('div')
     Object.assign(card.style, {
-      ...baseStyles(style),
+      ...baseStyles(style, ad.backgroundImageUrl as string | undefined),
       maxWidth: '400px',
       width: '90%',
       position: 'relative',
@@ -210,7 +222,7 @@
     wrapper.setAttribute('data-adman-wrapper', '')
 
     Object.assign(wrapper.style, {
-      ...baseStyles(style),
+      ...baseStyles(style, ad.backgroundImageUrl as string | undefined),
       maxWidth: '280px',
       boxShadow: '0 1px 3px rgba(0,0,0,0.12)',
     })
