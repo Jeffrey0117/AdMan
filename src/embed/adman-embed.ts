@@ -25,11 +25,33 @@
       const res = await fetch(`${BASE_URL}/api/serve/${adId}`)
       if (!res.ok) return
       const ad = await res.json()
-      renderByType(container, ad)
+
+      const overrides = readOverrides(container)
+      const mergedStyle = { ...ad.style, ...overrides }
+      const mergedAd = { ...ad, style: mergedStyle }
+
+      renderByType(container, mergedAd)
     } catch {
       // Silent fail - don't break the host page
     }
   })
+
+  function readOverrides(container: HTMLElement): Record<string, string> {
+    const map: Record<string, string | undefined> = {
+      backgroundColor: container.getAttribute('data-bg-color') ?? undefined,
+      textColor: container.getAttribute('data-text-color') ?? undefined,
+      fontSize: container.getAttribute('data-font-size') ?? undefined,
+      ctaBackgroundColor: container.getAttribute('data-cta-bg-color') ?? undefined,
+      ctaTextColor: container.getAttribute('data-cta-text-color') ?? undefined,
+      borderRadius: container.getAttribute('data-border-radius') ?? undefined,
+      padding: container.getAttribute('data-padding') ?? undefined,
+      maxWidth: container.getAttribute('data-max-width') ?? undefined,
+      textAlign: container.getAttribute('data-text-align') ?? undefined,
+    }
+    return Object.fromEntries(
+      Object.entries(map).filter(([, v]) => v !== undefined)
+    ) as Record<string, string>
+  }
 
   function escapeHtml(str: string): string {
     const div = document.createElement('div')
@@ -53,25 +75,30 @@
   }
 
   function baseStyles(style: Record<string, string | number>, backgroundImageUrl?: string): Record<string, string> {
-    return {
+    const styles: Record<string, string> = {
       backgroundColor: String(style.backgroundColor),
       color: String(style.textColor),
       borderRadius: String(style.borderRadius),
       padding: String(style.padding),
       maxWidth: String(style.maxWidth),
+      fontSize: style.fontSize ? String(style.fontSize) : '16px',
       fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
       boxSizing: 'border-box',
       ...bgImageStyles(backgroundImageUrl),
     }
+    if (style.textAlign) {
+      styles.textAlign = String(style.textAlign)
+    }
+    return styles
   }
 
   function ctaHtml(ad: Record<string, unknown>): string {
     const style = ad.style as Record<string, string>
-    return `<a href="${escapeHtml(ad.ctaUrl as string)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:${style.ctaBackgroundColor};color:${style.ctaTextColor};padding:8px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:500;white-space:nowrap">${escapeHtml(ad.ctaText as string)}</a>`
+    return `<a href="${escapeHtml(ad.ctaUrl as string)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:${style.ctaBackgroundColor};color:${style.ctaTextColor};padding:8px 20px;border-radius:6px;text-decoration:none;font-size:0.875em;font-weight:500;white-space:nowrap">${escapeHtml(ad.ctaText as string)}</a>`
   }
 
   function dismissBtn(color: string): string {
-    return `<button onclick="this.closest('[data-adman-wrapper]').remove()" style="background:none;border:none;cursor:pointer;font-size:18px;line-height:1;opacity:0.7;padding:4px 8px;color:${color}">✕</button>`
+    return `<button onclick="this.closest('[data-adman-wrapper]').remove()" style="background:none;border:none;cursor:pointer;font-size:1.125em;line-height:1;opacity:0.7;padding:4px 8px;color:${color}">&#10005;</button>`
   }
 
   function imageHtml(ad: Record<string, unknown>, maxHeight: string, extraStyle = ''): string {
@@ -86,11 +113,11 @@
       case 'bottom-banner':
         return renderBottomBanner(container, ad)
       case 'top-notification':
-        return renderTopNotification(ad)
+        return renderTopNotification(container, ad)
       case 'in-article-banner':
         return renderInArticleBanner(container, ad)
       case 'modal-popup':
-        return renderModalPopup(ad)
+        return renderModalPopup(container, ad)
       case 'sidebar-card':
         return renderSidebarCard(container, ad)
       default:
@@ -122,10 +149,10 @@
       html += `<img src="${escapeHtml(resolveImageSrc(imageUrl))}" alt="" style="width:80px;height:60px;object-fit:cover;border-radius:4px;flex-shrink:0" />`
     }
     html += `<div style="flex:1;min-width:0">`
-    html += `<h3 style="margin:0 0 4px;font-size:16px;font-weight:600">${escapeHtml(ad.headline as string)}</h3>`
+    html += `<h3 style="margin:0 0 4px;font-size:1em;font-weight:600">${escapeHtml(ad.headline as string)}</h3>`
     const bodyText = ad.bodyText as string
     if (bodyText) {
-      html += `<p style="margin:0;font-size:13px;opacity:0.85;line-height:1.4">${escapeHtml(bodyText)}</p>`
+      html += `<p style="margin:0;font-size:0.8125em;opacity:0.85;line-height:1.4">${escapeHtml(bodyText)}</p>`
     }
     html += `</div>`
     html += ctaHtml(ad)
@@ -134,7 +161,7 @@
     document.body.appendChild(wrapper)
   }
 
-  function renderTopNotification(ad: Record<string, unknown>): void {
+  function renderTopNotification(_container: HTMLElement, ad: Record<string, unknown>): void {
     const style = ad.style as Record<string, string | number>
     const wrapper = document.createElement('div')
     wrapper.setAttribute('data-adman-wrapper', '')
@@ -153,8 +180,8 @@
       boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
     })
 
-    let html = `<span style="flex:1;font-size:14px;font-weight:500">${escapeHtml(ad.headline as string)}</span>`
-    html += ctaHtml(ad).replace('padding:8px 20px', 'padding:6px 16px').replace('font-size:14px', 'font-size:13px')
+    let html = `<span style="flex:1;font-size:0.875em;font-weight:500">${escapeHtml(ad.headline as string)}</span>`
+    html += ctaHtml(ad).replace('padding:8px 20px', 'padding:6px 16px').replace('font-size:0.875em', 'font-size:0.8125em')
     html += dismissBtn(String(style.textColor))
 
     wrapper.innerHTML = html
@@ -172,10 +199,10 @@
     })
 
     let html = imageHtml(ad, '200px', 'width:100%')
-    html += `<h3 style="margin:0 0 6px;font-size:18px;font-weight:600">${escapeHtml(ad.headline as string)}</h3>`
+    html += `<h3 style="margin:0 0 6px;font-size:1.125em;font-weight:600">${escapeHtml(ad.headline as string)}</h3>`
     const bodyText = ad.bodyText as string
     if (bodyText) {
-      html += `<p style="margin:0 0 12px;font-size:14px;opacity:0.85;line-height:1.5">${escapeHtml(bodyText)}</p>`
+      html += `<p style="margin:0 0 12px;font-size:0.875em;opacity:0.85;line-height:1.5">${escapeHtml(bodyText)}</p>`
     }
     html += ctaHtml(ad)
 
@@ -183,7 +210,7 @@
     container.appendChild(wrapper)
   }
 
-  function renderModalPopup(ad: Record<string, unknown>): void {
+  function renderModalPopup(_container: HTMLElement, ad: Record<string, unknown>): void {
     const style = ad.style as Record<string, string | number>
     const backdrop = document.createElement('div')
     backdrop.setAttribute('data-adman-wrapper', '')
@@ -212,10 +239,10 @@
 
     let html = `<div style="position:absolute;top:8px;right:8px">${dismissBtn(String(style.textColor))}</div>`
     html += imageHtml(ad, '180px', 'width:100%')
-    html += `<h3 style="margin:0 0 8px;font-size:20px;font-weight:600">${escapeHtml(ad.headline as string)}</h3>`
+    html += `<h3 style="margin:0 0 8px;font-size:1.25em;font-weight:600">${escapeHtml(ad.headline as string)}</h3>`
     const bodyText = ad.bodyText as string
     if (bodyText) {
-      html += `<p style="margin:0 0 16px;font-size:14px;opacity:0.85;line-height:1.5">${escapeHtml(bodyText)}</p>`
+      html += `<p style="margin:0 0 16px;font-size:0.875em;opacity:0.85;line-height:1.5">${escapeHtml(bodyText)}</p>`
     }
     html += ctaHtml(ad).replace('display:inline-block', 'display:block;text-align:center;width:100%')
 
@@ -241,12 +268,12 @@
     })
 
     let html = imageHtml(ad, '160px', 'width:100%')
-    html += `<h3 style="margin:0 0 6px;font-size:16px;font-weight:600">${escapeHtml(ad.headline as string)}</h3>`
+    html += `<h3 style="margin:0 0 6px;font-size:1em;font-weight:600">${escapeHtml(ad.headline as string)}</h3>`
     const bodyText = ad.bodyText as string
     if (bodyText) {
-      html += `<p style="margin:0 0 12px;font-size:13px;opacity:0.85;line-height:1.4">${escapeHtml(bodyText)}</p>`
+      html += `<p style="margin:0 0 12px;font-size:0.8125em;opacity:0.85;line-height:1.4">${escapeHtml(bodyText)}</p>`
     }
-    html += ctaHtml(ad).replace('display:inline-block', 'display:block;text-align:center;width:100%;font-size:13px')
+    html += ctaHtml(ad).replace('display:inline-block', 'display:block;text-align:center;width:100%;font-size:0.8125em')
 
     wrapper.innerHTML = html
     container.appendChild(wrapper)

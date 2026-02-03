@@ -85,6 +85,17 @@ const translations = {
   'adForm.embedCode': { en: 'Embed Code', zh: '嵌入程式碼' },
   'adForm.copied': { en: 'Copied!', zh: '已複製！' },
   'adForm.copy': { en: 'Copy', zh: '複製' },
+  'adForm.embedAttrsTitle': { en: 'Available Attributes', zh: '可用屬性' },
+  'adForm.embedAttrsDesc': { en: 'Add these optional attributes to the container div to override styles:', zh: '將以下選用屬性加到容器 div 以覆蓋樣式：' },
+  'adForm.embedAttr.bgColor': { en: 'Background color', zh: '背景色' },
+  'adForm.embedAttr.textColor': { en: 'Text color', zh: '文字色' },
+  'adForm.embedAttr.fontSize': { en: 'Base font size', zh: '基礎字級' },
+  'adForm.embedAttr.ctaBgColor': { en: 'CTA button background', zh: 'CTA 按鈕背景' },
+  'adForm.embedAttr.ctaTextColor': { en: 'CTA button text color', zh: 'CTA 按鈕文字色' },
+  'adForm.embedAttr.borderRadius': { en: 'Border radius', zh: '圓角' },
+  'adForm.embedAttr.padding': { en: 'Padding', zh: '內距' },
+  'adForm.embedAttr.maxWidth': { en: 'Max width', zh: '最大寬度' },
+  'adForm.embedAttr.textAlign': { en: 'Text alignment', zh: '文字對齊' },
 
   // Preview
   'preview.back': { en: 'Back to Edit', zh: '返回編輯' },
