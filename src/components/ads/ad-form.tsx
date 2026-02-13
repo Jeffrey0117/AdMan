@@ -3,16 +3,25 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdPreview } from './ad-preview'
+import { LoginFormPreview } from '@/components/widgets/login-form-preview'
+import { FeedbackFormPreview } from '@/components/widgets/feedback-form-preview'
+import { LoginFormFields } from '@/components/widgets/login-form-fields'
+import { FeedbackFormFields } from '@/components/widgets/feedback-form-fields'
 import { useLang } from '@/components/layout/lang-provider'
 import type { TranslationKey } from '@/lib/i18n'
+import type { LoginFormConfig, FeedbackFormConfig } from '@/lib/models'
 import {
   AD_TYPES,
   AD_STATUSES,
+  WIDGET_CATEGORIES,
   TYPE_DEFAULT_POSITIONS,
   TYPE_POSITION_OPTIONS,
+  CATEGORY_DEFAULT_POSITION,
+  CATEGORY_POSITION_OPTIONS,
 } from '@/lib/constants'
-import type { AdType, AdStatus, AdPosition } from '@/lib/constants'
+import type { AdType, AdStatus, AdPosition, WidgetCategory } from '@/lib/constants'
 import { getTemplateById } from '@/lib/templates'
+import { getDefaultWidgetConfig } from '@/lib/widget-types'
 
 interface Project {
   id: string
@@ -22,6 +31,7 @@ interface Project {
 interface AdFormData {
   projectId: string
   name: string
+  category: WidgetCategory
   type: AdType
   status: AdStatus
   position: AdPosition
@@ -31,6 +41,7 @@ interface AdFormData {
   ctaUrl: string
   imageUrl: string
   backgroundImageUrl: string
+  widgetConfig?: Record<string, unknown>
   style: {
     backgroundColor: string
     textColor: string
@@ -146,6 +157,7 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
     const base: AdFormData = {
       projectId: defaultProjectId ?? '',
       name: '',
+      category: 'ad',
       type: 'bottom-banner',
       status: 'draft',
       position: 'fixed-bottom',
@@ -177,6 +189,8 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
     return base
   })
 
+  const isWidget = form.category !== 'ad'
+
   useEffect(() => {
     loadData()
     if (defaultTemplateId && getTemplateById(defaultTemplateId)) {
@@ -185,12 +199,30 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
   }, [])
 
   useEffect(() => {
-    const defaultPos = TYPE_DEFAULT_POSITIONS[form.type]
-    const options = TYPE_POSITION_OPTIONS[form.type]
-    if (!options.includes(form.position)) {
-      updateForm({ position: defaultPos })
+    if (form.category === 'ad') {
+      const defaultPos = TYPE_DEFAULT_POSITIONS[form.type]
+      const options = TYPE_POSITION_OPTIONS[form.type]
+      if (!options.includes(form.position)) {
+        updateForm({ position: defaultPos })
+      }
     }
   }, [form.type])
+
+  function handleCategoryChange(category: WidgetCategory) {
+    if (category === 'ad') {
+      updateForm({
+        category,
+        position: TYPE_DEFAULT_POSITIONS[form.type],
+        widgetConfig: undefined,
+      })
+    } else {
+      updateForm({
+        category,
+        position: CATEGORY_DEFAULT_POSITION[category],
+        widgetConfig: getDefaultWidgetConfig(category),
+      })
+    }
+  }
 
   async function loadData() {
     try {
@@ -209,15 +241,17 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
         setForm({
           projectId: adData.projectId,
           name: adData.name,
+          category: adData.category ?? 'ad',
           type: adData.type,
           status: adData.status,
           position: adData.position,
-          headline: adData.headline,
-          bodyText: adData.bodyText,
-          ctaText: adData.ctaText,
-          ctaUrl: adData.ctaUrl,
+          headline: adData.headline ?? '',
+          bodyText: adData.bodyText ?? '',
+          ctaText: adData.ctaText ?? '',
+          ctaUrl: adData.ctaUrl ?? '',
           imageUrl: adData.imageUrl ?? '',
           backgroundImageUrl: adData.backgroundImageUrl ?? '',
+          widgetConfig: adData.widgetConfig,
           style: {
             backgroundColor: adData.style.backgroundColor,
             textColor: adData.style.textColor,
@@ -241,6 +275,10 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
 
   function updateStyle(updates: Partial<AdFormData['style']>) {
     setForm((prev) => ({ ...prev, style: { ...prev.style, ...updates } }))
+  }
+
+  function updateWidgetConfig(config: Record<string, unknown>) {
+    setForm((prev) => ({ ...prev, widgetConfig: config }))
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -360,30 +398,54 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className={labelClass}>{t('adForm.type')}</label>
-              <select
-                className={selectClass}
-                value={form.type}
-                onChange={(e) => updateForm({ type: e.target.value as AdType })}
-              >
-                {AD_TYPES.map((typ) => (
-                  <option key={typ} value={typ}>
-                    {t(`type.${typ}` as TranslationKey)}
-                  </option>
-                ))}
-              </select>
+          {/* Category Selector */}
+          <div>
+            <label className={labelClass}>{t('adForm.category')}</label>
+            <div className="grid grid-cols-3 gap-2">
+              {WIDGET_CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => handleCategoryChange(cat)}
+                  className={`rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+                    form.category === cat
+                      ? 'border-zinc-900 bg-zinc-900 text-white'
+                      : 'border-zinc-300 text-zinc-600 hover:border-zinc-400 hover:bg-zinc-50'
+                  }`}
+                >
+                  {t(`category.${cat}` as TranslationKey)}
+                </button>
+              ))}
             </div>
+          </div>
+
+          {/* Type + Position + Status row */}
+          <div className={`grid gap-3 ${isWidget ? 'grid-cols-2' : 'grid-cols-3'}`}>
+            {!isWidget && (
+              <div>
+                <label className={labelClass}>{t('adForm.type')}</label>
+                <select
+                  className={selectClass}
+                  value={form.type}
+                  onChange={(e) => updateForm({ type: e.target.value as AdType })}
+                >
+                  {AD_TYPES.map((typ) => (
+                    <option key={typ} value={typ}>
+                      {t(`type.${typ}` as TranslationKey)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className={labelClass}>{t('adForm.position')}</label>
               <select
                 className={selectClass}
                 value={form.position}
                 onChange={(e) => updateForm({ position: e.target.value as AdPosition })}
-                disabled={TYPE_POSITION_OPTIONS[form.type].length <= 1}
+                disabled={(isWidget ? CATEGORY_POSITION_OPTIONS[form.category] : TYPE_POSITION_OPTIONS[form.type]).length <= 1}
               >
-                {TYPE_POSITION_OPTIONS[form.type].map((pos) => (
+                {(isWidget ? CATEGORY_POSITION_OPTIONS[form.category] : TYPE_POSITION_OPTIONS[form.type]).map((pos) => (
                   <option key={pos} value={pos}>
                     {t(`position.${pos}` as TranslationKey)}
                   </option>
@@ -406,112 +468,143 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
             </div>
           </div>
 
-          <div>
-            <label className={labelClass}>{t('adForm.headline')}</label>
-            <input
-              className={inputClass}
-              value={form.headline}
-              onChange={(e) => updateForm({ headline: e.target.value })}
-              placeholder={t('adForm.headlinePlaceholder')}
-              required
-            />
-          </div>
+          {/* Ad-specific fields */}
+          {form.category === 'ad' && (
+            <>
+              <div>
+                <label className={labelClass}>{t('adForm.headline')}</label>
+                <input
+                  className={inputClass}
+                  value={form.headline}
+                  onChange={(e) => updateForm({ headline: e.target.value })}
+                  placeholder={t('adForm.headlinePlaceholder')}
+                  required
+                />
+              </div>
 
-          <div>
-            <label className={labelClass}>{t('adForm.bodyText')}</label>
-            <textarea
-              className={inputClass}
-              rows={3}
-              value={form.bodyText}
-              onChange={(e) => updateForm({ bodyText: e.target.value })}
-              placeholder={t('adForm.bodyTextPlaceholder')}
-            />
-          </div>
+              <div>
+                <label className={labelClass}>{t('adForm.bodyText')}</label>
+                <textarea
+                  className={inputClass}
+                  rows={3}
+                  value={form.bodyText}
+                  onChange={(e) => updateForm({ bodyText: e.target.value })}
+                  placeholder={t('adForm.bodyTextPlaceholder')}
+                />
+              </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelClass}>{t('adForm.ctaText')}</label>
-              <input
-                className={inputClass}
-                value={form.ctaText}
-                onChange={(e) => updateForm({ ctaText: e.target.value })}
-                placeholder="Click Here"
-                required
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelClass}>{t('adForm.ctaText')}</label>
+                  <input
+                    className={inputClass}
+                    value={form.ctaText}
+                    onChange={(e) => updateForm({ ctaText: e.target.value })}
+                    placeholder="Click Here"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>{t('adForm.ctaUrl')}</label>
+                  <input
+                    className={inputClass}
+                    type="url"
+                    value={form.ctaUrl}
+                    onChange={(e) => updateForm({ ctaUrl: e.target.value })}
+                    placeholder="https://..."
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelClass}>{t('adForm.image')}</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="text-sm text-zinc-600"
+                />
+                {form.imageUrl && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-xs text-zinc-500">{form.imageUrl}</span>
+                    <button
+                      type="button"
+                      onClick={() => updateForm({ imageUrl: '' })}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      {t('adForm.removeImage')}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className={labelClass}>{t('adForm.backgroundImage')}</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    const formData = new FormData()
+                    formData.append('file', file)
+                    try {
+                      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+                      if (!res.ok) {
+                        const data = await res.json()
+                        setError(data.error)
+                        return
+                      }
+                      const data = await res.json()
+                      updateForm({ backgroundImageUrl: data.url })
+                    } catch {
+                      setError('Upload failed')
+                    }
+                  }}
+                  className="text-sm text-zinc-600"
+                />
+                {form.backgroundImageUrl && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-xs text-zinc-500">{form.backgroundImageUrl}</span>
+                    <button
+                      type="button"
+                      onClick={() => updateForm({ backgroundImageUrl: '' })}
+                      className="text-xs text-red-600 hover:underline"
+                    >
+                      {t('adForm.removeBackgroundImage')}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Login Form fields */}
+          {form.category === 'login-form' && (
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+              <LoginFormFields
+                config={(form.widgetConfig ?? {}) as LoginFormConfig}
+                onChange={(config) => updateWidgetConfig(config as unknown as Record<string, unknown>)}
+                t={t}
+                inputClass={inputClass}
+                labelClass={labelClass}
               />
             </div>
-            <div>
-              <label className={labelClass}>{t('adForm.ctaUrl')}</label>
-              <input
-                className={inputClass}
-                type="url"
-                value={form.ctaUrl}
-                onChange={(e) => updateForm({ ctaUrl: e.target.value })}
-                placeholder="https://..."
-                required
+          )}
+
+          {/* Feedback Form fields */}
+          {form.category === 'feedback-form' && (
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+              <FeedbackFormFields
+                config={(form.widgetConfig ?? {}) as FeedbackFormConfig}
+                onChange={(config) => updateWidgetConfig(config as unknown as Record<string, unknown>)}
+                t={t}
+                inputClass={inputClass}
+                labelClass={labelClass}
               />
             </div>
-          </div>
-
-          <div>
-            <label className={labelClass}>{t('adForm.image')}</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="text-sm text-zinc-600"
-            />
-            {form.imageUrl && (
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs text-zinc-500">{form.imageUrl}</span>
-                <button
-                  type="button"
-                  onClick={() => updateForm({ imageUrl: '' })}
-                  className="text-xs text-red-600 hover:underline"
-                >
-                  {t('adForm.removeImage')}
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className={labelClass}>{t('adForm.backgroundImage')}</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={async (e) => {
-                const file = e.target.files?.[0]
-                if (!file) return
-                const formData = new FormData()
-                formData.append('file', file)
-                try {
-                  const res = await fetch('/api/upload', { method: 'POST', body: formData })
-                  if (!res.ok) {
-                    const data = await res.json()
-                    setError(data.error)
-                    return
-                  }
-                  const data = await res.json()
-                  updateForm({ backgroundImageUrl: data.url })
-                } catch {
-                  setError('Upload failed')
-                }
-              }}
-              className="text-sm text-zinc-600"
-            />
-            {form.backgroundImageUrl && (
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs text-zinc-500">{form.backgroundImageUrl}</span>
-                <button
-                  type="button"
-                  onClick={() => updateForm({ backgroundImageUrl: '' })}
-                  className="text-xs text-red-600 hover:underline"
-                >
-                  {t('adForm.removeBackgroundImage')}
-                </button>
-              </div>
-            )}
-          </div>
+          )}
 
           <div className="border-t border-zinc-200 pt-4">
             <h3 className="text-sm font-semibold text-zinc-700 mb-3">
@@ -641,18 +734,32 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
             {t('adForm.livePreview')}
           </h2>
           <div className="rounded-lg border border-zinc-200 bg-white p-6">
-            <AdPreview
-              ad={{
-                headline: form.headline,
-                bodyText: form.bodyText,
-                ctaText: form.ctaText,
-                ctaUrl: form.ctaUrl,
-                imageUrl: form.imageUrl || undefined,
-                backgroundImageUrl: form.backgroundImageUrl || undefined,
-                type: form.type,
-                style: form.style,
-              }}
-            />
+            {form.category === 'ad' && (
+              <AdPreview
+                ad={{
+                  headline: form.headline,
+                  bodyText: form.bodyText,
+                  ctaText: form.ctaText,
+                  ctaUrl: form.ctaUrl,
+                  imageUrl: form.imageUrl || undefined,
+                  backgroundImageUrl: form.backgroundImageUrl || undefined,
+                  type: form.type,
+                  style: form.style,
+                }}
+              />
+            )}
+            {form.category === 'login-form' && (
+              <LoginFormPreview
+                config={(form.widgetConfig ?? {}) as LoginFormConfig}
+                style={form.style}
+              />
+            )}
+            {form.category === 'feedback-form' && (
+              <FeedbackFormPreview
+                config={(form.widgetConfig ?? {}) as FeedbackFormConfig}
+                style={form.style}
+              />
+            )}
           </div>
 
           {mode === 'edit' && adId && (

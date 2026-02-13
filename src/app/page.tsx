@@ -9,6 +9,7 @@ interface Ad {
   name: string
   headline: string
   status: string
+  category?: string
 }
 
 interface Project {
@@ -41,6 +42,7 @@ export default function DashboardPage() {
 
   const enabledAds = ads.filter((a) => a.status === 'enabled')
   const draftAds = ads.filter((a) => a.status === 'draft')
+  const widgetCount = ads.filter((a) => a.category && a.category !== 'ad').length
 
   return (
     <div className="p-8">
@@ -51,7 +53,7 @@ export default function DashboardPage() {
         {t('dashboard.subtitle')}
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-4">
         <Link
           href="/projects"
           className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
@@ -78,6 +80,14 @@ export default function DashboardPage() {
           </p>
           <p className="mt-1 text-3xl font-bold text-emerald-600">
             {enabledAds.length}
+          </p>
+        </div>
+        <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+          <p className="text-sm font-medium text-zinc-500">
+            {t('dashboard.widgets')}
+          </p>
+          <p className="mt-1 text-3xl font-bold text-blue-600">
+            {widgetCount}
           </p>
         </div>
       </div>

@@ -15,6 +15,7 @@ const translations = {
   'dashboard.newAd': { en: '+ New Ad', zh: '+ 新增廣告' },
   'dashboard.manageProjects': { en: 'Manage Projects', zh: '管理專案' },
   'dashboard.draftAds': { en: 'Draft Ads', zh: '草稿廣告' },
+  'dashboard.widgets': { en: 'Widgets', zh: '組件' },
 
   // Projects
   'projects.title': { en: 'Projects', zh: '專案' },
@@ -127,6 +128,53 @@ const translations = {
   'position.fixed': { en: 'Fixed (Modal)', zh: '固定（彈窗）' },
   'position.sidebar-left': { en: 'Sidebar Left', zh: '左側欄' },
   'position.sidebar-right': { en: 'Sidebar Right', zh: '右側欄' },
+
+  // Widget Categories
+  'nav.widgets': { en: 'Widgets', zh: '組件' },
+  'category.ad': { en: 'Advertisement', zh: '廣告' },
+  'category.login-form': { en: 'Login Form', zh: '登入表單' },
+  'category.feedback-form': { en: 'Feedback Form', zh: '回饋表單' },
+  'adForm.category': { en: 'Category', zh: '分類' },
+
+  // Login Form
+  'loginForm.title': { en: 'Title', zh: '標題' },
+  'loginForm.titlePlaceholder': { en: 'Login', zh: '登入' },
+  'loginForm.subtitle': { en: 'Subtitle', zh: '副標題' },
+  'loginForm.subtitlePlaceholder': { en: 'Sign in to your account', zh: '登入您的帳號' },
+  'loginForm.submitText': { en: 'Submit Button Text', zh: '送出按鈕文字' },
+  'loginForm.submitUrl': { en: 'Submit URL', zh: '送出網址' },
+  'loginForm.submitUrlPlaceholder': { en: 'https://your-api.com/auth/login', zh: 'https://your-api.com/auth/login' },
+  'loginForm.successRedirect': { en: 'Success Redirect URL', zh: '成功後跳轉網址' },
+  'loginForm.showSocialLogins': { en: 'Social Login Buttons', zh: '社群登入按鈕' },
+  'loginForm.socialGoogle': { en: 'Google', zh: 'Google' },
+  'loginForm.socialGithub': { en: 'GitHub', zh: 'GitHub' },
+  'loginForm.socialFacebook': { en: 'Facebook', zh: 'Facebook' },
+  'loginForm.showRegisterLink': { en: 'Show Register Link', zh: '顯示註冊連結' },
+  'loginForm.registerUrl': { en: 'Register URL', zh: '註冊網址' },
+  'loginForm.showForgotPassword': { en: 'Show Forgot Password', zh: '顯示忘記密碼' },
+  'loginForm.forgotPasswordUrl': { en: 'Forgot Password URL', zh: '忘記密碼網址' },
+
+  // Feedback Form
+  'feedbackForm.title': { en: 'Title', zh: '標題' },
+  'feedbackForm.titlePlaceholder': { en: 'Send us feedback', zh: '給我們回饋' },
+  'feedbackForm.subtitle': { en: 'Subtitle', zh: '副標題' },
+  'feedbackForm.subtitlePlaceholder': { en: "We'd love to hear from you", zh: '我們期待您的意見' },
+  'feedbackForm.submitText': { en: 'Submit Button Text', zh: '送出按鈕文字' },
+  'feedbackForm.submitUrl': { en: 'Submit URL', zh: '送出網址' },
+  'feedbackForm.submitUrlPlaceholder': { en: 'https://your-api.com/feedback', zh: 'https://your-api.com/feedback' },
+  'feedbackForm.successMessage': { en: 'Success Message', zh: '成功訊息' },
+  'feedbackForm.fields': { en: 'Form Fields', zh: '表單欄位' },
+  'feedbackForm.addField': { en: '+ Add Field', zh: '+ 新增欄位' },
+  'feedbackForm.fieldName': { en: 'Field Key', zh: '欄位鍵值' },
+  'feedbackForm.fieldLabel': { en: 'Label', zh: '標籤' },
+  'feedbackForm.fieldType': { en: 'Type', zh: '類型' },
+  'feedbackForm.fieldPlaceholder': { en: 'Placeholder', zh: '提示文字' },
+  'feedbackForm.fieldRequired': { en: 'Required', zh: '必填' },
+  'feedbackForm.removeField': { en: 'Remove', zh: '移除' },
+  'feedbackForm.fieldTypeText': { en: 'Text', zh: '文字' },
+  'feedbackForm.fieldTypeEmail': { en: 'Email', zh: 'Email' },
+  'feedbackForm.fieldTypeTextarea': { en: 'Textarea', zh: '多行文字' },
+  'feedbackForm.fieldTypeRating': { en: 'Rating', zh: '評分' },
 
   // Templates
   'nav.templates': { en: 'Templates', zh: '模板' },

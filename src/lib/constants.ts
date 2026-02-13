@@ -1,3 +1,10 @@
+// ── Widget Categories ────────────────────────────────────
+
+export const WIDGET_CATEGORIES = ['ad', 'login-form', 'feedback-form'] as const
+export type WidgetCategory = (typeof WIDGET_CATEGORIES)[number]
+
+// ── Ad Types ─────────────────────────────────────────────
+
 export const AD_TYPES = [
   'bottom-banner',
   'top-notification',
@@ -57,4 +64,18 @@ export const AD_POSITION_LABELS: Record<AdPosition, string> = {
   'fixed': 'Fixed (Modal)',
   'sidebar-left': 'Sidebar Left',
   'sidebar-right': 'Sidebar Right',
+}
+
+// ── Widget Category Defaults ─────────────────────────────
+
+export const CATEGORY_DEFAULT_POSITION: Record<WidgetCategory, AdPosition> = {
+  'ad': 'fixed-bottom',
+  'login-form': 'inline',
+  'feedback-form': 'inline',
+}
+
+export const CATEGORY_POSITION_OPTIONS: Record<WidgetCategory, readonly AdPosition[]> = {
+  'ad': AD_POSITIONS,
+  'login-form': ['inline', 'fixed'],
+  'feedback-form': ['inline', 'fixed', 'sidebar-right', 'sidebar-left'],
 }
