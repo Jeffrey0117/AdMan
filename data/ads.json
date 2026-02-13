@@ -82,7 +82,7 @@
     "type": "bottom-banner",
     "status": "enabled",
     "position": "fixed-bottom",
-    "headline": "Follow @html__cat on Threads",
+    "headline": "更多作者的作品 @html__cat on Threads",
     "bodyText": "前端開發 / 技術分享 / 日常碎念",
     "ctaText": "追蹤 Threads",
     "ctaUrl": "https://www.threads.com/@html__cat",
@@ -98,6 +98,6 @@
       "customCSS": ""
     },
     "createdAt": "2026-02-01T12:00:00.000Z",
-    "updatedAt": "2026-02-01T12:00:00.000Z"
+    "updatedAt": "2026-02-01T14:16:57.953Z"
   }
 ]

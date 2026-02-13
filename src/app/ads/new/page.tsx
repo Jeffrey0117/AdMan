@@ -7,8 +7,9 @@ import { Suspense } from 'react'
 function NewAdContent() {
   const searchParams = useSearchParams()
   const projectId = searchParams.get('projectId') ?? undefined
+  const templateId = searchParams.get('template') ?? undefined
 
-  return <AdForm mode="create" defaultProjectId={projectId} />
+  return <AdForm mode="create" defaultProjectId={projectId} defaultTemplateId={templateId} />
 }
 
 export default function NewAdPage() {
