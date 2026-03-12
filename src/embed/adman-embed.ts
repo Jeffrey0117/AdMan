@@ -169,8 +169,8 @@
       display: 'flex',
       flexDirection: 'row',
       alignItems: 'center',
-      gap: mobile ? '10px' : '16px',
-      padding: mobile ? '10px 12px calc(10px + env(safe-area-inset-bottom, 0px))' : String(style.padding),
+      gap: mobile ? '8px' : '16px',
+      padding: mobile ? '6px 10px calc(6px + env(safe-area-inset-bottom, 0px))' : String(style.padding),
       boxShadow: '0 -2px 8px rgba(0,0,0,0.15)',
     })
 
@@ -180,16 +180,16 @@
       html += `<img src="${escapeHtml(resolveImageSrc(imageUrl))}" alt="" style="width:80px;height:60px;object-fit:cover;border-radius:4px;flex-shrink:0" />`
     }
     html += `<div style="flex:1;min-width:0;overflow:hidden">`
-    html += `<h3 style="margin:0 0 2px;font-size:${mobile ? '0.8125em' : '1em'};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(ad.headline as string)}</h3>`
+    html += `<span style="font-size:${mobile ? '0.75em' : '1em'};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${escapeHtml(ad.headline as string)}</span>`
     const bodyText = ad.bodyText as string
-    if (bodyText) {
-      html += `<p style="margin:0;font-size:${mobile ? '0.6875em' : '0.8125em'};opacity:0.85;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(bodyText)}</p>`
+    if (bodyText && !mobile) {
+      html += `<p style="margin:0;font-size:0.8125em;opacity:0.85;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(bodyText)}</p>`
     }
     html += `</div>`
     const ctaText = (ad.ctaText as string) || ''
     if (ctaText.trim()) {
       const ctaStyle = ad.style as Record<string, string>
-      html += `<a href="${escapeHtml(ad.ctaUrl as string)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;flex-shrink:0;background:${ctaStyle.ctaBackgroundColor};color:${ctaStyle.ctaTextColor};padding:${mobile ? '6px 12px' : '8px 20px'};border-radius:6px;text-decoration:none;font-size:${mobile ? '0.75em' : '0.875em'};font-weight:500;white-space:nowrap">${escapeHtml(ctaText)}</a>`
+      html += `<a href="${escapeHtml(ad.ctaUrl as string)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;flex-shrink:0;background:${ctaStyle.ctaBackgroundColor};color:${ctaStyle.ctaTextColor};padding:${mobile ? '5px 10px' : '8px 20px'};border-radius:${mobile ? '4px' : '6px'};text-decoration:none;font-size:${mobile ? '0.7em' : '0.875em'};font-weight:500;white-space:nowrap">${escapeHtml(ctaText)}</a>`
     }
 
     wrapper.innerHTML = html
