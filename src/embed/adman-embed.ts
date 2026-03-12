@@ -82,7 +82,7 @@
       padding: String(style.padding),
       maxWidth: String(style.maxWidth),
       fontSize: style.fontSize ? String(style.fontSize) : '16px',
-      fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
+      fontFamily: style.fontFamily ? String(style.fontFamily) : '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif',
       boxSizing: 'border-box',
       ...bgImageStyles(backgroundImageUrl),
     }
@@ -92,9 +92,23 @@
     return styles
   }
 
+  function applyCustomCSS(el: HTMLElement, customCSS: string): void {
+    if (!customCSS) return
+    const rules = customCSS.split(';').filter(Boolean)
+    for (const rule of rules) {
+      const [prop, val] = rule.split(':').map(s => s.trim())
+      if (prop && val) {
+        const camel = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase())
+        ;(el.style as unknown as Record<string, string>)[camel] = val
+      }
+    }
+  }
+
   function ctaHtml(ad: Record<string, unknown>): string {
+    const ctaText = (ad.ctaText as string) || ''
+    if (!ctaText.trim()) return ''
     const style = ad.style as Record<string, string>
-    return `<a href="${escapeHtml(ad.ctaUrl as string)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:${style.ctaBackgroundColor};color:${style.ctaTextColor};padding:8px 20px;border-radius:6px;text-decoration:none;font-size:0.875em;font-weight:500;white-space:nowrap">${escapeHtml(ad.ctaText as string)}</a>`
+    return `<a href="${escapeHtml(ad.ctaUrl as string)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:${style.ctaBackgroundColor};color:${style.ctaTextColor};padding:8px 20px;border-radius:6px;text-decoration:none;font-size:0.875em;font-weight:500;white-space:nowrap">${escapeHtml(ctaText)}</a>`
   }
 
   function dismissBtn(color: string): string {
@@ -185,6 +199,7 @@
   function renderTopNotification(_container: HTMLElement, ad: Record<string, unknown>): void {
     const style = ad.style as Record<string, string | number>
     const mobile = isMobile()
+    const hasCta = !!((ad.ctaText as string) || '').trim()
     const wrapper = document.createElement('div')
     wrapper.setAttribute('data-adman-wrapper', '')
 
@@ -198,26 +213,39 @@
       display: 'flex',
       flexDirection: mobile ? 'column' : 'row',
       alignItems: mobile ? 'stretch' : 'center',
+      justifyContent: hasCta ? 'flex-start' : 'center',
       gap: mobile ? '8px' : '12px',
       padding: mobile ? '12px 16px' : '10px 16px',
       boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
     })
 
+    applyCustomCSS(wrapper, String(style.customCSS || ''))
+
     let html = ''
+    const bodyText = (ad.bodyText as string) || ''
+    const headlineHtml = `<span style="font-size:0.875em;font-weight:500">${escapeHtml(ad.headline as string)}</span>`
+    const bodyHtml = bodyText ? `<span style="font-size:0.8125em;opacity:0.85;margin-left:8px">${escapeHtml(bodyText)}</span>` : ''
+
     if (mobile) {
-      // Mobile: headline row with dismiss, then CTA below
       html += `<div style="display:flex;align-items:center;gap:8px">`
-      html += `<span style="flex:1;font-size:0.875em;font-weight:500">${escapeHtml(ad.headline as string)}</span>`
+      html += `<div style="flex:1">${headlineHtml}${bodyHtml}</div>`
       html += dismissBtn(String(style.textColor))
       html += `</div>`
-      html += ctaHtml(ad).replace('display:inline-block', 'display:block;text-align:center;width:100%').replace('padding:8px 20px', 'padding:8px 16px')
+      const cta = ctaHtml(ad)
+      if (cta) html += cta.replace('display:inline-block', 'display:block;text-align:center;width:100%').replace('padding:8px 20px', 'padding:8px 16px')
     } else {
-      html += `<span style="flex:1;font-size:0.875em;font-weight:500">${escapeHtml(ad.headline as string)}</span>`
-      html += ctaHtml(ad).replace('padding:8px 20px', 'padding:6px 16px').replace('font-size:0.875em', 'font-size:0.8125em')
-      html += dismissBtn(String(style.textColor))
+      if (hasCta) {
+        html += `<div style="flex:1">${headlineHtml}${bodyHtml}</div>`
+        html += ctaHtml(ad).replace('padding:8px 20px', 'padding:6px 16px').replace('font-size:0.875em', 'font-size:0.8125em')
+        html += dismissBtn(String(style.textColor))
+      } else {
+        html += `<div style="flex:1;text-align:center">${headlineHtml}${bodyHtml}</div>`
+        html += `<div style="position:absolute;right:8px;top:50%;transform:translateY(-50%)">${dismissBtn(String(style.textColor))}</div>`
+      }
     }
 
     wrapper.innerHTML = html
+    if (!hasCta) wrapper.style.position = 'fixed'
     document.body.appendChild(wrapper)
   }
 
