@@ -164,32 +164,32 @@
       bottom: '0',
       left: '0',
       right: '0',
+      width: '100%',
       zIndex: String(style.zIndex),
       display: 'flex',
-      flexDirection: mobile ? 'column' : 'row',
-      alignItems: mobile ? 'stretch' : 'center',
-      gap: mobile ? '12px' : '16px',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: mobile ? '10px' : '16px',
+      padding: mobile ? '10px 12px calc(10px + env(safe-area-inset-bottom, 0px))' : String(style.padding),
       boxShadow: '0 -2px 8px rgba(0,0,0,0.15)',
     })
 
     let html = ''
     const imageUrl = ad.imageUrl as string | undefined
-    // Hide image on mobile to save space
     if (imageUrl && !mobile) {
       html += `<img src="${escapeHtml(resolveImageSrc(imageUrl))}" alt="" style="width:80px;height:60px;object-fit:cover;border-radius:4px;flex-shrink:0" />`
     }
-    html += `<div style="flex:1;min-width:0">`
-    html += `<h3 style="margin:0 0 4px;font-size:1em;font-weight:600">${escapeHtml(ad.headline as string)}</h3>`
+    html += `<div style="flex:1;min-width:0;overflow:hidden">`
+    html += `<h3 style="margin:0 0 2px;font-size:${mobile ? '0.8125em' : '1em'};font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(ad.headline as string)}</h3>`
     const bodyText = ad.bodyText as string
     if (bodyText) {
-      html += `<p style="margin:0;font-size:0.8125em;opacity:0.85;line-height:1.4">${escapeHtml(bodyText)}</p>`
+      html += `<p style="margin:0;font-size:${mobile ? '0.6875em' : '0.8125em'};opacity:0.85;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(bodyText)}</p>`
     }
     html += `</div>`
-    // Full-width CTA on mobile
-    if (mobile) {
-      html += ctaHtml(ad).replace('display:inline-block', 'display:block;text-align:center;width:100%')
-    } else {
-      html += ctaHtml(ad)
+    const ctaText = (ad.ctaText as string) || ''
+    if (ctaText.trim()) {
+      const ctaStyle = ad.style as Record<string, string>
+      html += `<a href="${escapeHtml(ad.ctaUrl as string)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;flex-shrink:0;background:${ctaStyle.ctaBackgroundColor};color:${ctaStyle.ctaTextColor};padding:${mobile ? '6px 12px' : '8px 20px'};border-radius:6px;text-decoration:none;font-size:${mobile ? '0.75em' : '0.875em'};font-weight:500;white-space:nowrap">${escapeHtml(ctaText)}</a>`
     }
 
     wrapper.innerHTML = html
