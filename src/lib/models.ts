@@ -11,6 +11,33 @@ export const SafeUrlSchema = z.string().refine(
 
 const safeUrlOptional = SafeUrlSchema.optional()
 
+// ── Site (analytics tracking 站點) ───────────────────────
+
+export const SiteSchema = z.object({
+  id: z.string(), // site_xxx，同時是嵌入用的 site key
+  name: z.string().min(1, 'Name is required'),
+  // 允許送事件的 Origin 白名單；空陣列 = 不限制
+  allowedOrigins: z.array(z.string()).default([]),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+})
+
+export type Site = z.infer<typeof SiteSchema>
+
+export const CreateSiteSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  allowedOrigins: z.array(z.string()).default([]),
+})
+
+export type CreateSiteInput = z.infer<typeof CreateSiteSchema>
+
+export const UpdateSiteSchema = z.object({
+  name: z.string().min(1).optional(),
+  allowedOrigins: z.array(z.string()).optional(),
+})
+
+export type UpdateSiteInput = z.infer<typeof UpdateSiteSchema>
+
 // ── Project ──────────────────────────────────────────────
 
 export const ProjectSchema = z.object({

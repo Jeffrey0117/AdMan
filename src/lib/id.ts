@@ -7,3 +7,7 @@ export function generateProjectId(): string {
 export function generateAdId(): string {
   return `ad_${nanoid(8)}`
 }
+
+export function generateSiteId(): string {
+  return `site_${nanoid(10)}`
+}

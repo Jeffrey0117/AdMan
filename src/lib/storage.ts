@@ -99,3 +99,4 @@ export async function findByField<T extends HasId>(
 
 export const PROJECTS_FILE = 'projects.json'
 export const ADS_FILE = 'ads.json'
+export const SITES_FILE = 'sites.json'
