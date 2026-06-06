@@ -178,6 +178,7 @@ const translations = {
 
   // Templates
   'nav.templates': { en: 'Templates', zh: '模板' },
+  'nav.sites': { en: 'Analytics', zh: '數據' },
   'templates.title': { en: 'Templates', zh: '模板' },
   'templates.subtitle': { en: 'Pre-built ad templates for e-commerce campaigns', zh: '電商活動預設廣告模板' },
   'templates.all': { en: 'All', zh: '全部' },

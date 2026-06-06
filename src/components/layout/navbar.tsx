@@ -10,6 +10,7 @@ const navItems: { href: string; labelKey: TranslationKey }[] = [
   { href: '/projects', labelKey: 'nav.projects' },
   { href: '/ads', labelKey: 'nav.ads' },
   { href: '/templates', labelKey: 'nav.templates' },
+  { href: '/sites', labelKey: 'nav.sites' },
 ]
 
 export function Navbar() {

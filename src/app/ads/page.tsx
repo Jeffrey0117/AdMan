@@ -144,6 +144,12 @@ export default function AdsPage() {
             </div>
             <div className="flex gap-2">
               <Link
+                href={`/ads/${ad.id}/stats`}
+                className="text-xs text-zinc-500 hover:underline"
+              >
+                數據
+              </Link>
+              <Link
                 href={`/preview/${ad.id}`}
                 className="text-xs text-zinc-500 hover:underline"
               >

@@ -47,3 +47,8 @@ next-env.d.ts
 
 # runtime data (deploy keeps its own copy)
 /data/
+
+# deploy artifacts (contain machine paths / secrets)
+.pm2-ecosystem.json
+.pkg-hash
+package-lock.json
