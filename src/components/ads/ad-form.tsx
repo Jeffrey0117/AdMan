@@ -1,5 +1,6 @@
 'use client'
 
+import { apiFetch } from '@/lib/api-client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { AdPreview } from './ad-preview'
@@ -226,12 +227,12 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
 
   async function loadData() {
     try {
-      const projRes = await fetch('/api/projects')
+      const projRes = await apiFetch('/api/projects')
       const projData = await projRes.json()
       setProjects(projData)
 
       if (mode === 'edit' && adId) {
-        const adRes = await fetch(`/api/ads/${adId}`)
+        const adRes = await apiFetch(`/api/ads/${adId}`)
         if (!adRes.ok) {
           setError(t('common.notFound'))
           setLoading(false)
@@ -287,7 +288,7 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
     const formData = new FormData()
     formData.append('file', file)
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+      const res = await apiFetch('/api/upload', { method: 'POST', body: formData })
       if (!res.ok) {
         const data = await res.json()
         setError(data.error)
@@ -315,7 +316,7 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
     }
 
     try {
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -550,7 +551,7 @@ export function AdForm({ mode, adId, defaultProjectId, defaultTemplateId }: AdFo
                     const formData = new FormData()
                     formData.append('file', file)
                     try {
-                      const res = await fetch('/api/upload', { method: 'POST', body: formData })
+                      const res = await apiFetch('/api/upload', { method: 'POST', body: formData })
                       if (!res.ok) {
                         const data = await res.json()
                         setError(data.error)

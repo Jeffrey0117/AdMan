@@ -1,5 +1,6 @@
 'use client'
 
+import { apiFetch } from '@/lib/api-client'
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useLang } from '@/components/layout/lang-provider'
@@ -24,8 +25,8 @@ export default function DashboardPage() {
 
   const fetchData = useCallback(async () => {
     const [projRes, adsRes] = await Promise.all([
-      fetch('/api/projects'),
-      fetch('/api/ads'),
+      apiFetch('/api/projects'),
+      apiFetch('/api/ads'),
     ])
     setProjects(await projRes.json())
     setAds(await adsRes.json())

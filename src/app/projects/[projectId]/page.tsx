@@ -1,5 +1,6 @@
 'use client'
 
+import { apiFetch } from '@/lib/api-client'
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
@@ -39,8 +40,8 @@ export default function ProjectDetailPage() {
 
   const fetchData = useCallback(async () => {
     const [projRes, adsRes] = await Promise.all([
-      fetch(`/api/projects/${params.projectId}`),
-      fetch(`/api/ads?projectId=${params.projectId}`),
+      apiFetch(`/api/projects/${params.projectId}`),
+      apiFetch(`/api/ads?projectId=${params.projectId}`),
     ])
     if (!projRes.ok) {
       setLoading(false)
@@ -61,7 +62,7 @@ export default function ProjectDetailPage() {
 
   async function handleUpdate(e: React.FormEvent) {
     e.preventDefault()
-    await fetch(`/api/projects/${params.projectId}`, {
+    await apiFetch(`/api/projects/${params.projectId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, description, domain: domain || undefined }),
@@ -72,7 +73,7 @@ export default function ProjectDetailPage() {
 
   async function handleDeleteAd(adId: string) {
     if (!confirm(t('ads.confirmDelete'))) return
-    await fetch(`/api/ads/${adId}`, { method: 'DELETE' })
+    await apiFetch(`/api/ads/${adId}`, { method: 'DELETE' })
     fetchData()
   }
 

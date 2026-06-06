@@ -1,5 +1,6 @@
 'use client'
 
+import { apiFetch } from '@/lib/api-client'
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useLang } from '@/components/layout/lang-provider'
@@ -31,8 +32,8 @@ export default function AdsPage() {
 
   const fetchData = useCallback(async () => {
     const [adsRes, projRes] = await Promise.all([
-      fetch('/api/ads'),
-      fetch('/api/projects'),
+      apiFetch('/api/ads'),
+      apiFetch('/api/projects'),
     ])
     setAds(await adsRes.json())
     setProjects(await projRes.json())
@@ -45,7 +46,7 @@ export default function AdsPage() {
 
   async function handleDelete(adId: string) {
     if (!confirm(t('ads.confirmDelete'))) return
-    await fetch(`/api/ads/${adId}`, { method: 'DELETE' })
+    await apiFetch(`/api/ads/${adId}`, { method: 'DELETE' })
     fetchData()
   }
 

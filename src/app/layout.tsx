@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Navbar } from '@/components/layout/navbar'
 import { LangProvider } from '@/components/layout/lang-provider'
+import { AuthGate } from '@/components/layout/auth-gate'
 import './globals.css'
 
 const geistSans = Geist({
@@ -31,7 +32,9 @@ export default function RootLayout({
       >
         <LangProvider>
           <Navbar />
-          <main className="min-h-screen bg-zinc-50 px-12 lg:px-32">{children}</main>
+          <main className="min-h-screen bg-zinc-50 px-12 lg:px-32">
+            <AuthGate>{children}</AuthGate>
+          </main>
         </LangProvider>
       </body>
     </html>

@@ -1,5 +1,6 @@
 'use client'
 
+import { apiFetch } from '@/lib/api-client'
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useLang } from '@/components/layout/lang-provider'
@@ -30,8 +31,8 @@ export default function ProjectsPage() {
 
   const fetchData = useCallback(async () => {
     const [projRes, adsRes] = await Promise.all([
-      fetch('/api/projects'),
-      fetch('/api/ads'),
+      apiFetch('/api/projects'),
+      apiFetch('/api/ads'),
     ])
     setProjects(await projRes.json())
     setAds(await adsRes.json())
@@ -45,7 +46,7 @@ export default function ProjectsPage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
-    const res = await fetch('/api/projects', {
+    const res = await apiFetch('/api/projects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -66,7 +67,7 @@ export default function ProjectsPage() {
 
   async function handleDelete(id: string) {
     if (!confirm(t('projects.confirmDelete'))) return
-    const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' })
+    const res = await apiFetch(`/api/projects/${id}`, { method: 'DELETE' })
     if (!res.ok) {
       const data = await res.json()
       alert(data.error)

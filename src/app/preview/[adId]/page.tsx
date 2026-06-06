@@ -1,5 +1,6 @@
 'use client'
 
+import { apiFetch } from '@/lib/api-client'
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
@@ -35,7 +36,7 @@ export default function PreviewPage() {
   const [loading, setLoading] = useState(true)
 
   const fetchAd = useCallback(async () => {
-    const res = await fetch(`/api/ads/${params.adId}`)
+    const res = await apiFetch(`/api/ads/${params.adId}`)
     if (res.ok) {
       setAd(await res.json())
     }

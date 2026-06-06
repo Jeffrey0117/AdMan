@@ -1,5 +1,6 @@
 'use client'
 
+import { apiFetch } from '@/lib/api-client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLang } from '@/components/layout/lang-provider'
@@ -24,7 +25,7 @@ export default function TemplatesPage() {
   const [selectedProjectId, setSelectedProjectId] = useState('')
 
   useEffect(() => {
-    fetch('/api/projects')
+    apiFetch('/api/projects')
       .then((res) => res.json())
       .then((data) => {
         setProjects(data)
