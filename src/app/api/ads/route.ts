@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAll, create, findByField, getById, ADS_FILE, PROJECTS_FILE } from '@/lib/storage'
 import { CreateAdSchema, type Ad, type Project } from '@/lib/models'
 import { generateAdId } from '@/lib/id'
+import { withAuth } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest) => {
   try {
     const body = await request.json()
     const parsed = CreateAdSchema.safeParse(body)
@@ -88,4 +89,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

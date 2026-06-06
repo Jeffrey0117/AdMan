@@ -1,6 +1,16 @@
 import { z } from 'zod'
 import { AD_TYPES, AD_STATUSES, AD_POSITIONS, WIDGET_CATEGORIES } from './constants'
 
+// ── Safe URL ─────────────────────────────────────────────
+// 只允許空字串、站內相對路徑或 http(s)，擋 javascript:/data: 等危險 scheme
+// （embed 端會把這些值塞進 href/action，escapeHtml 擋不了 scheme 注入）
+export const SafeUrlSchema = z.string().refine(
+  (v) => v === '' || v.startsWith('/') || /^https?:\/\//i.test(v),
+  { message: 'URL must be http(s) or a relative path' }
+)
+
+const safeUrlOptional = SafeUrlSchema.optional()
+
 // ── Project ──────────────────────────────────────────────
 
 export const ProjectSchema = z.object({
@@ -66,14 +76,14 @@ export const LoginFormConfigSchema = z.object({
     { name: 'password', type: 'password', label: 'Password', placeholder: '', required: true },
   ]),
   submitText: z.string().default('Sign In'),
-  submitUrl: z.string().default(''),
-  successRedirect: z.string().default(''),
+  submitUrl: SafeUrlSchema.default(''),
+  successRedirect: SafeUrlSchema.default(''),
   showSocialLogins: z.boolean().default(false),
   socialLogins: z.array(z.enum(['google', 'github', 'facebook'])).default([]),
   showRegisterLink: z.boolean().default(true),
-  registerUrl: z.string().default(''),
+  registerUrl: SafeUrlSchema.default(''),
   showForgotPassword: z.boolean().default(true),
-  forgotPasswordUrl: z.string().default(''),
+  forgotPasswordUrl: SafeUrlSchema.default(''),
 })
 
 export type LoginFormConfig = z.infer<typeof LoginFormConfigSchema>
@@ -97,7 +107,7 @@ export const FeedbackFormConfigSchema = z.object({
     { name: 'message', type: 'textarea', label: 'Message', placeholder: 'Your feedback...', required: true },
   ]),
   submitText: z.string().default('Send Feedback'),
-  submitUrl: z.string().default(''),
+  submitUrl: SafeUrlSchema.default(''),
   successMessage: z.string().default('Thank you for your feedback!'),
 })
 
@@ -124,9 +134,9 @@ export const AdSchema = z.object({
   headline: z.string().default(''),
   bodyText: z.string().default(''),
   ctaText: z.string().default(''),
-  ctaUrl: z.string().default(''),
-  imageUrl: z.string().optional(),
-  backgroundImageUrl: z.string().optional(),
+  ctaUrl: SafeUrlSchema.default(''),
+  imageUrl: safeUrlOptional,
+  backgroundImageUrl: safeUrlOptional,
   // Widget-specific config
   widgetConfig: z.record(z.string(), z.unknown()).optional(),
   style: AdStyleSchema,
@@ -147,9 +157,9 @@ export const CreateAdSchema = z.object({
   headline: z.string().default(''),
   bodyText: z.string().default(''),
   ctaText: z.string().default(''),
-  ctaUrl: z.string().default(''),
-  imageUrl: z.string().optional(),
-  backgroundImageUrl: z.string().optional(),
+  ctaUrl: SafeUrlSchema.default(''),
+  imageUrl: safeUrlOptional,
+  backgroundImageUrl: safeUrlOptional,
   // Widget-specific config
   widgetConfig: z.record(z.string(), z.unknown()).optional(),
   style: AdStyleSchema.optional(),
@@ -166,9 +176,9 @@ export const UpdateAdSchema = z.object({
   headline: z.string().optional(),
   bodyText: z.string().optional(),
   ctaText: z.string().optional(),
-  ctaUrl: z.string().optional(),
-  imageUrl: z.string().optional(),
-  backgroundImageUrl: z.string().optional(),
+  ctaUrl: SafeUrlSchema.optional(),
+  imageUrl: safeUrlOptional,
+  backgroundImageUrl: safeUrlOptional,
   widgetConfig: z.record(z.string(), z.unknown()).optional(),
   style: AdStyleSchema.partial().optional(),
 })

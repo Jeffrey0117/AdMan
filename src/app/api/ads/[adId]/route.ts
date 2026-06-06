@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getById, update, remove, ADS_FILE } from '@/lib/storage'
 import { UpdateAdSchema, type Ad } from '@/lib/models'
+import { withAuth } from '@/lib/auth'
 
 type RouteParams = { params: Promise<{ adId: string }> }
 
@@ -21,7 +22,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export const PUT = withAuth<RouteParams>(async (request, { params }) => {
   try {
     const { adId } = await params
     const body = await request.json()
@@ -58,9 +59,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       { status: 500 }
     )
   }
-}
+})
 
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export const DELETE = withAuth<RouteParams>(async (_request, { params }) => {
   try {
     const { adId } = await params
     const deleted = await remove<Ad>(ADS_FILE, adId)
@@ -75,4 +76,4 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       { status: 500 }
     )
   }
-}
+})

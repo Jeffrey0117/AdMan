@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAll, create, PROJECTS_FILE } from '@/lib/storage'
 import { CreateProjectSchema, type Project } from '@/lib/models'
 import { generateProjectId } from '@/lib/id'
+import { withAuth } from '@/lib/auth'
 
 export async function GET() {
   try {
@@ -16,7 +17,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request: NextRequest) => {
   try {
     const body = await request.json()
     const parsed = CreateProjectSchema.safeParse(body)
@@ -46,4 +47,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

@@ -59,6 +59,20 @@
     return div.innerHTML
   }
 
+  // 只放行 http(s) 與站內相對路徑，擋 javascript:/data: 等 scheme 注入
+  // （escapeHtml 擋不了塞進 href/action 的危險 scheme）
+  function safeUrl(url: string): string {
+    if (!url) return '#'
+    if (url.startsWith('/')) return url
+    try {
+      const u = new URL(url, window.location.href)
+      if (u.protocol === 'http:' || u.protocol === 'https:') return url
+    } catch {
+      // fallthrough
+    }
+    return '#'
+  }
+
   function resolveImageSrc(url: string): string {
     return url.startsWith('http') ? url : `${BASE_URL}${url}`
   }
@@ -108,7 +122,7 @@
     const ctaText = (ad.ctaText as string) || ''
     if (!ctaText.trim()) return ''
     const style = ad.style as Record<string, string>
-    return `<a href="${escapeHtml(ad.ctaUrl as string)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:${style.ctaBackgroundColor};color:${style.ctaTextColor};padding:8px 20px;border-radius:6px;text-decoration:none;font-size:0.875em;font-weight:500;white-space:nowrap">${escapeHtml(ctaText)}</a>`
+    return `<a href="${escapeHtml(safeUrl(ad.ctaUrl as string))}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:${style.ctaBackgroundColor};color:${style.ctaTextColor};padding:8px 20px;border-radius:6px;text-decoration:none;font-size:0.875em;font-weight:500;white-space:nowrap">${escapeHtml(ctaText)}</a>`
   }
 
   function dismissBtn(color: string): string {
@@ -189,7 +203,7 @@
     const ctaText = (ad.ctaText as string) || ''
     if (ctaText.trim()) {
       const ctaStyle = ad.style as Record<string, string>
-      html += `<a href="${escapeHtml(ad.ctaUrl as string)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;flex-shrink:0;background:${ctaStyle.ctaBackgroundColor};color:${ctaStyle.ctaTextColor};padding:${mobile ? '6px 14px' : '8px 20px'};border-radius:6px;text-decoration:none;font-size:${mobile ? '0.75em' : '0.875em'};font-weight:500;white-space:nowrap">${escapeHtml(ctaText)}</a>`
+      html += `<a href="${escapeHtml(safeUrl(ad.ctaUrl as string))}" target="_blank" rel="noopener noreferrer" style="display:inline-block;flex-shrink:0;background:${ctaStyle.ctaBackgroundColor};color:${ctaStyle.ctaTextColor};padding:${mobile ? '6px 14px' : '8px 20px'};border-radius:6px;text-decoration:none;font-size:${mobile ? '0.75em' : '0.875em'};font-weight:500;white-space:nowrap">${escapeHtml(ctaText)}</a>`
     }
 
     wrapper.innerHTML = html
@@ -395,7 +409,7 @@
       html += `<p style="margin:0 0 16px;font-size:14px;opacity:0.7">${escapeHtml(subtitle)}</p>`
     }
 
-    html += `<form data-adman-form action="${escapeHtml(submitUrl)}" data-redirect="${escapeHtml(successRedirect)}" style="display:flex;flex-direction:column;gap:12px">`
+    html += `<form data-adman-form action="${escapeHtml(safeUrl(submitUrl))}" data-redirect="${escapeHtml(safeUrl(successRedirect))}" style="display:flex;flex-direction:column;gap:12px">`
     for (const field of fields) {
       const label = escapeHtml(field.label as string)
       const req = field.required ? '<span style="color:#ef4444;margin-left:2px">*</span>' : ''
@@ -422,10 +436,10 @@
     if (showRegisterLink || showForgotPassword) {
       html += `<div style="margin-top:12px;display:flex;justify-content:space-between;font-size:12px">`
       if (showRegisterLink) {
-        html += `<a href="${escapeHtml(registerUrl)}" style="color:${style.ctaBackgroundColor};text-decoration:none">Create account</a>`
+        html += `<a href="${escapeHtml(safeUrl(registerUrl))}" style="color:${style.ctaBackgroundColor};text-decoration:none">Create account</a>`
       }
       if (showForgotPassword) {
-        html += `<a href="${escapeHtml(forgotPasswordUrl)}" style="color:${tc};opacity:0.6;text-decoration:none">Forgot password?</a>`
+        html += `<a href="${escapeHtml(safeUrl(forgotPasswordUrl))}" style="color:${tc};opacity:0.6;text-decoration:none">Forgot password?</a>`
       }
       html += `</div>`
     }
@@ -440,13 +454,13 @@
         e.preventDefault()
         const data = Object.fromEntries(new FormData(form))
         try {
-          const res = await fetch(submitUrl, {
+          const res = await fetch(safeUrl(submitUrl), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
           })
           if (res.ok && successRedirect) {
-            window.location.href = successRedirect
+            window.location.href = safeUrl(successRedirect)
           }
         } catch {
           // silent fail
@@ -483,7 +497,7 @@
       html += `<p style="margin:0 0 16px;font-size:14px;opacity:0.7">${escapeHtml(subtitle)}</p>`
     }
 
-    html += `<form data-adman-form action="${escapeHtml(submitUrl)}" data-success="${successMessage}" style="display:flex;flex-direction:column;gap:12px">`
+    html += `<form data-adman-form action="${escapeHtml(safeUrl(submitUrl))}" data-success="${successMessage}" style="display:flex;flex-direction:column;gap:12px">`
     for (const field of fields) {
       const label = escapeHtml(field.label as string)
       const req = field.required ? '<span style="color:#ef4444;margin-left:2px">*</span>' : ''
@@ -535,7 +549,7 @@
         const data = Object.fromEntries(new FormData(form))
         if (submitUrl) {
           try {
-            await fetch(submitUrl, {
+            await fetch(safeUrl(submitUrl), {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(data),

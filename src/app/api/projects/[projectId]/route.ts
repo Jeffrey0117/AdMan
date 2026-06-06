@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getById, update, remove, PROJECTS_FILE, findByField, ADS_FILE } from '@/lib/storage'
 import { UpdateProjectSchema, type Project } from '@/lib/models'
 import type { Ad } from '@/lib/models'
+import { withAuth } from '@/lib/auth'
 
 type RouteParams = { params: Promise<{ projectId: string }> }
 
@@ -22,7 +23,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: RouteParams) {
+export const PUT = withAuth<RouteParams>(async (request, { params }) => {
   try {
     const { projectId } = await params
     const body = await request.json()
@@ -50,9 +51,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       { status: 500 }
     )
   }
-}
+})
 
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export const DELETE = withAuth<RouteParams>(async (_request, { params }) => {
   try {
     const { projectId } = await params
 
@@ -77,4 +78,4 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       { status: 500 }
     )
   }
-}
+})
