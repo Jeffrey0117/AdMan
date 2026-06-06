@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "pnpm build:embed && next build",
-    "build:embed": "npx esbuild src/embed/adman-embed.ts --bundle --minify --format=iife --outfile=public/embed/adman.js",
+    "build:embed": "npx esbuild src/embed/adman-embed.ts --bundle --minify --format=iife --outfile=public/embed/adman.js && npx esbuild src/embed/track.ts --bundle --minify --format=iife --outfile=public/embed/track.js",
     "start": "next start",
     "lint": "eslint",
     "seed": "npx tsx scripts/seed.ts"

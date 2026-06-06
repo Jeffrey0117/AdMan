@@ -30,11 +30,77 @@
       const mergedStyle = { ...ad.style, ...overrides }
       const mergedAd = { ...ad, style: mergedStyle }
 
-      renderByType(container, mergedAd)
+      const wrapper = renderByType(container, mergedAd)
+      if (wrapper) attachAdTracking(wrapper, adId)
     } catch {
       // Silent fail - don't break the host page
     }
   })
+
+  // ── Ad tracking（曝光 / 點擊）─────────────────────────────
+
+  function getSessionId(): string {
+    try {
+      const KEY = 'adman_sid'
+      const existing = sessionStorage.getItem(KEY)
+      if (existing) return existing
+      const sid =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+      sessionStorage.setItem(KEY, sid)
+      return sid
+    } catch {
+      return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+    }
+  }
+
+  function trackAd(adId: string, type: 'ad_impression' | 'ad_click'): void {
+    try {
+      const body = JSON.stringify({
+        sessionId: getSessionId(),
+        events: [{ type, adId }],
+      })
+      const url = `${BASE_URL}/api/track`
+      if (!navigator.sendBeacon?.(url, new Blob([body], { type: 'application/json' }))) {
+        fetch(url, { method: 'POST', body, keepalive: true }).catch(() => {})
+      }
+    } catch {
+      // tracking must never break the host page
+    }
+  }
+
+  function attachAdTracking(wrapper: HTMLElement, adId: string): void {
+    // 曝光：可視面積過半才算，記一次就解除觀察
+    try {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              trackAd(adId, 'ad_impression')
+              observer.disconnect()
+            }
+          }
+        },
+        { threshold: 0.5 }
+      )
+      observer.observe(wrapper)
+    } catch {
+      // 老瀏覽器沒有 IO 就直接算一次曝光
+      trackAd(adId, 'ad_impression')
+    }
+
+    // 點擊：wrapper 內任何連結
+    wrapper.addEventListener(
+      'click',
+      (e) => {
+        if ((e.target as HTMLElement).closest('a')) {
+          trackAd(adId, 'ad_click')
+        }
+      },
+      { capture: true, passive: true }
+    )
+  }
 
   function readOverrides(container: HTMLElement): Record<string, string> {
     const map: Record<string, string | undefined> = {
@@ -139,7 +205,7 @@
     return window.innerWidth < 640
   }
 
-  function renderByType(container: HTMLElement, ad: Record<string, unknown>): void {
+  function renderByType(container: HTMLElement, ad: Record<string, unknown>): HTMLElement | null {
     const category = (ad.category as string) || 'ad'
 
     if (category === 'login-form') {
@@ -166,7 +232,7 @@
     }
   }
 
-  function renderBottomBanner(_container: HTMLElement, ad: Record<string, unknown>): void {
+  function renderBottomBanner(_container: HTMLElement, ad: Record<string, unknown>): HTMLElement {
     const style = ad.style as Record<string, string | number>
     const mobile = isMobile()
     const wrapper = document.createElement('div')
@@ -208,9 +274,10 @@
 
     wrapper.innerHTML = html
     document.body.appendChild(wrapper)
+    return wrapper
   }
 
-  function renderTopNotification(_container: HTMLElement, ad: Record<string, unknown>): void {
+  function renderTopNotification(_container: HTMLElement, ad: Record<string, unknown>): HTMLElement {
     const style = ad.style as Record<string, string | number>
     const mobile = isMobile()
     const hasCta = !!((ad.ctaText as string) || '').trim()
@@ -261,9 +328,10 @@
     wrapper.innerHTML = html
     if (!hasCta) wrapper.style.position = 'fixed'
     document.body.appendChild(wrapper)
+    return wrapper
   }
 
-  function renderInArticleBanner(container: HTMLElement, ad: Record<string, unknown>): void {
+  function renderInArticleBanner(container: HTMLElement, ad: Record<string, unknown>): HTMLElement {
     const style = ad.style as Record<string, string | number>
     const mobile = isMobile()
     const wrapper = document.createElement('div')
@@ -288,9 +356,10 @@
 
     wrapper.innerHTML = html
     container.appendChild(wrapper)
+    return wrapper
   }
 
-  function renderModalPopup(_container: HTMLElement, ad: Record<string, unknown>): void {
+  function renderModalPopup(_container: HTMLElement, ad: Record<string, unknown>): HTMLElement {
     const style = ad.style as Record<string, string | number>
     const mobile = isMobile()
     const backdrop = document.createElement('div')
@@ -340,9 +409,10 @@
     })
 
     document.body.appendChild(backdrop)
+    return backdrop
   }
 
-  function renderSidebarCard(container: HTMLElement, ad: Record<string, unknown>): void {
+  function renderSidebarCard(container: HTMLElement, ad: Record<string, unknown>): HTMLElement {
     const style = ad.style as Record<string, string | number>
     const mobile = isMobile()
     const wrapper = document.createElement('div')
@@ -364,6 +434,7 @@
 
     wrapper.innerHTML = html
     container.appendChild(wrapper)
+    return wrapper
   }
 
   // ── Widget Renderers ─────────────────────────────────────
@@ -376,7 +447,7 @@
     return `display:block;width:100%;padding:10px;margin-top:16px;background:${bgColor};color:${txtColor};border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif`
   }
 
-  function renderLoginForm(container: HTMLElement, ad: Record<string, unknown>): void {
+  function renderLoginForm(container: HTMLElement, ad: Record<string, unknown>): HTMLElement {
     const style = ad.style as Record<string, string | number>
     const config = (ad.widgetConfig || {}) as Record<string, unknown>
     const wrapper = document.createElement('div')
@@ -467,9 +538,11 @@
         }
       })
     }
+
+    return wrapper
   }
 
-  function renderFeedbackForm(container: HTMLElement, ad: Record<string, unknown>): void {
+  function renderFeedbackForm(container: HTMLElement, ad: Record<string, unknown>): HTMLElement {
     const style = ad.style as Record<string, string | number>
     const config = (ad.widgetConfig || {}) as Record<string, unknown>
     const wrapper = document.createElement('div')
@@ -565,5 +638,7 @@
         }
       })
     }
+
+    return wrapper
   }
 })()
