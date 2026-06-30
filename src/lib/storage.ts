@@ -61,6 +61,18 @@ export async function create<T extends HasId>(
   return item
 }
 
+// 🆕 批量建立 — 讀一次、全部 append、寫一次 (避免逐筆 create 的 N 次 IO + 競態)
+export async function createMany<T extends HasId>(
+  filename: string,
+  newItems: T[]
+): Promise<T[]> {
+  if (newItems.length === 0) return []
+  const items = await readJsonFile<T>(filename)
+  const updated = [...items, ...newItems]
+  await writeJsonFile(filename, updated)
+  return newItems
+}
+
 export async function update<T extends HasId>(
   filename: string,
   id: string,
