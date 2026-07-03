@@ -63,8 +63,10 @@
     queue = queue.slice(20)
     try {
       const body = JSON.stringify({ sessionId, siteKey: SITE_KEY, events: batch })
-      if (!navigator.sendBeacon?.(ENDPOINT, new Blob([body], { type: 'application/json' }))) {
-        fetch(ENDPOINT, { method: 'POST', body, keepalive: true }).catch(() => {})
+      // text/plain 為 CORS 安全類型，不觸發 preflight（sendBeacon 必帶 credentials，
+      // application/json 的 preflight 會撞上萬用字元 ACAO 被瀏覽器擋掉）
+      if (!navigator.sendBeacon?.(ENDPOINT, new Blob([body], { type: 'text/plain;charset=UTF-8' }))) {
+        fetch(ENDPOINT, { method: 'POST', body, keepalive: true, credentials: 'omit' }).catch(() => {})
       }
     } catch {
       // tracking must never break the host page

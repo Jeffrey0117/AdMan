@@ -11,10 +11,15 @@ import type { Ad, Site } from '@/lib/models'
  * - tenant 歸屬一律從 DB 反查，不信任 client
  */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+// sendBeacon 依規範必帶 credentials，回 '*' 會被瀏覽器整批擋掉 — 必須動態回應 Origin
+function corsHeaders(origin: string | null): Record<string, string> {
+  return {
+    'Access-Control-Allow-Origin': origin || '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true',
+    Vary: 'Origin',
+  }
 }
 
 const adIdPattern = /^ad_[\w-]{4,24}$/
@@ -54,17 +59,18 @@ function originAllowed(site: Site, origin: string | null): boolean {
   return site.allowedOrigins.some((o) => o.replace(/\/+$/, '').toLowerCase() === normalized)
 }
 
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: corsHeaders })
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, { status: 204, headers: corsHeaders(request.headers.get('origin')) })
 }
 
 export async function POST(request: NextRequest) {
+  const cors = corsHeaders(request.headers.get('origin'))
   try {
     // sendBeacon 不一定帶 application/json content-type，用 text 再 parse
     const raw = await request.text()
     const parsed = BodySchema.safeParse(JSON.parse(raw))
     if (!parsed.success) {
-      return NextResponse.json({ ok: false }, { status: 400, headers: corsHeaders })
+      return NextResponse.json({ ok: false }, { status: 400, headers: cors })
     }
     const { sessionId, siteKey, events } = parsed.data
 
@@ -95,7 +101,7 @@ export async function POST(request: NextRequest) {
       if (!siteVerified) {
         const site = await getById<Site>(SITES_FILE, siteKey)
         if (!site || !originAllowed(site, request.headers.get('origin'))) {
-          return NextResponse.json({ ok: false }, { status: 403, headers: corsHeaders })
+          return NextResponse.json({ ok: false }, { status: 403, headers: cors })
         }
         siteVerified = true
       }
@@ -114,9 +120,9 @@ export async function POST(request: NextRequest) {
       insertEvents(rows)
     }
 
-    return NextResponse.json({ ok: true }, { headers: corsHeaders })
+    return NextResponse.json({ ok: true }, { headers: cors })
   } catch (error) {
     console.error('Track failed:', error)
-    return NextResponse.json({ ok: false }, { status: 400, headers: corsHeaders })
+    return NextResponse.json({ ok: false }, { status: 400, headers: cors })
   }
 }
