@@ -102,15 +102,6 @@ export function getAdStats(adId: string, days: number = 30): AdStats {
     )
     .get(adId, since) as { impressions: number | null; clicks: number | null; sessions: number }
 
-  const devices = database
-    .prepare(
-      `SELECT COALESCE(json_extract(metadata, '$.device'), 'unknown') AS device,
-              COUNT(DISTINCT session_id) AS sessions
-       FROM events WHERE ${base} AND event_type = 'page_view'
-       GROUP BY 1`
-    )
-    .all(siteKey, since) as Array<{ device: string; sessions: number }>
-
   const daily = database
     .prepare(
       `SELECT date(created_at) AS date,
@@ -200,6 +191,15 @@ export function getSiteStats(siteKey: string, days: number = 30): SiteStats {
        GROUP BY 1 ORDER BY 2 DESC LIMIT 10`
     )
     .all(siteKey, since) as Array<{ referrer: string; views: number }>
+
+  const devices = database
+    .prepare(
+      `SELECT COALESCE(json_extract(metadata, '$.device'), 'unknown') AS device,
+              COUNT(DISTINCT session_id) AS sessions
+       FROM events WHERE ${base} AND event_type = 'page_view'
+       GROUP BY 1`
+    )
+    .all(siteKey, since) as Array<{ device: string; sessions: number }>
 
   const daily = database
     .prepare(
